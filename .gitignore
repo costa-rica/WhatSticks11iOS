@@ -1,0 +1,11 @@
+WhatSticks10iOS/Config.plist
+*.pbxuser
+*.xccheckout
+*.xcuserdata
+*.xcodeproj
+!default.xcworkspace
+!default.xcworkspace/contents.xcworkspacedata
+!default.xcworkspace/xcshareddata/
+!default.xcworkspace/xcuserdata/
+DerivedData
+*.moved-aside
