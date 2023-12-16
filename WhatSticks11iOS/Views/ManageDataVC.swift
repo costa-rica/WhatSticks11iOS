@@ -39,7 +39,7 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
         tblDataSources.refreshControl = refreshControl
     }
     override func viewDidAppear(_ animated: Bool) {
-        for obj in userStore.arryDashHealthDataObj!{
+        for obj in userStore.arryDataSourceObjects!{
             print("\(obj.name!): \(obj.recordCount!)")
         }
         DispatchQueue.main.async{
@@ -63,10 +63,10 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
     }
     @objc private func refreshData(_ sender: UIRefreshControl) {
 
-        self.userStore.callSendHealthDataObjects(login:false) { responseResult in
+        self.userStore.callSendDataSourceObjects { responseResult in
             switch responseResult{
-            case let .success(arryDashHealthDataObj):
-                self.userStore.arryDashHealthDataObj = arryDashHealthDataObj
+            case let .success(jsonDataSourceObj):
+                self.userStore.arryDataSourceObjects = jsonDataSourceObj
                 self.refreshValuesInTable()
             case let .failure(error):
                 sender.endRefreshing()
@@ -115,13 +115,12 @@ extension ManageDataVC: UITableViewDelegate{
 
 extension ManageDataVC: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return userStore.arryDashHealthDataObj?.count ?? 0
+        return userStore.arryDataSourceObjects?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ManageDataTableCell", for: indexPath) as! ManageDataTableCell
-        guard let arryDashHealthDataObj = userStore.arryDashHealthDataObj else {return cell}
+        guard let arryDashHealthDataObj = userStore.arryDataSourceObjects else {return cell}
         let dashHealthDataObj = arryDashHealthDataObj[indexPath.row]
         let dataSourceText = dashHealthDataObj.name!
         let recordCountText = dashHealthDataObj.recordCount!

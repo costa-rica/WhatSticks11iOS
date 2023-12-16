@@ -13,9 +13,12 @@ enum UserStoreError: Error {
     case failedToRegister
     case failedToRecieveServerResponse
     case failedToRecievedExpectedResponse
+    case fileNotFound
+    case serverError(statusCode: Int)
     var localizedDescription: String {
         switch self {
         case .failedDecode: return "Failed to decode response."
+        case .fileNotFound: return "What Sticks API could not find the dashboard data on the server."
         default: return "What Sticks main server is not responding."
         }
     }
@@ -32,7 +35,8 @@ class UserStore {
             }
         }
     }
-    var arryDashHealthDataObj:[DashboardHealthDataObject]?
+    var arryDataSourceObjects:[DataSourceObject]?
+    var arryDashboardTableObjects:[DashboardTableObject]?
     var existing_emails = [String]()
     var urlStore:URLStore!
     var requestStore:RequestStore!
@@ -115,14 +119,16 @@ class UserStore {
         }
     }
     
-    func callSendHealthDataObjects(login:Bool, completion:@escaping (Result<[DashboardHealthDataObject],Error>) -> Void){
-        let request: URLRequest
-        if login{
-            request = requestStore.createRequestWithToken(endpoint: .send_login_health_data_objects)
-        }
-        else{
-            request = requestStore.createRequestWithToken(endpoint: .send_dashboard_health_data_objects)
-        }
+    // used in Login
+    func callSendDataSourceObjects(completion:@escaping (Result<[DataSourceObject],Error>) -> Void){
+//        let request: URLRequest
+//        if login{
+//            request = requestStore.createRequestWithToken(endpoint: .send_login_health_data_objects)
+//        }
+//        else{
+//            request = requestStore.createRequestWithToken(endpoint: .send_dashboard_health_data_objects)
+//        }
+        let request = requestStore.createRequestWithToken(endpoint: .send_data_source_objects)
         let task = requestStore.session.dataTask(with: request) { data, urlResponse, error in
             guard let unwrapped_data = data else {
                 OperationQueue.main.addOperation {
@@ -133,9 +139,9 @@ class UserStore {
             }
             do {
                 let jsonDecoder = JSONDecoder()
-                let jsonDashHealthDataObj = try jsonDecoder.decode([DashboardHealthDataObject].self, from: unwrapped_data)
+                let jsonDataSourceObj = try jsonDecoder.decode([DataSourceObject].self, from: unwrapped_data)
                 OperationQueue.main.addOperation {
-                    completion(.success(jsonDashHealthDataObj))
+                    completion(.success(jsonDataSourceObj))
                 }
             } catch {
                 print("did not get expected response from WSAPI - probably no file for user")
@@ -148,6 +154,80 @@ class UserStore {
     }
 
     
+    func callSendDashboardTableObjects(completion: @escaping (Result<[DashboardTableObject], Error>) -> Void) {
+        let request = requestStore.createRequestWithToken(endpoint: .send_dashboard_table_objects)
+        let task = requestStore.session.dataTask(with: request) { data, urlResponse, error in
+            // Check for network errors
+            if let error = error {
+                OperationQueue.main.addOperation {
+                    completion(.failure(error))
+                }
+                return
+            }
+
+            // Check for HTTP status code
+            if let httpResponse = urlResponse as? HTTPURLResponse {
+                switch httpResponse.statusCode {
+                case 200:
+                    // Handle success case
+                    guard let unwrappedData = data else {
+                        OperationQueue.main.addOperation {
+                            completion(.failure(UserStoreError.failedToRecieveServerResponse))
+                        }
+                        return
+                    }
+                    do {
+                        let jsonDecoder = JSONDecoder()
+                        let jsonDashboardTableObj = try jsonDecoder.decode([DashboardTableObject].self, from: unwrappedData)
+                        OperationQueue.main.addOperation {
+                            completion(.success(jsonDashboardTableObj))
+                        }
+                    } catch {
+                        OperationQueue.main.addOperation {
+                            completion(.failure(UserStoreError.failedToRecievedExpectedResponse))
+                        }
+                    }
+                case 404:
+                    // Handle file not found case
+                    OperationQueue.main.addOperation {
+                        completion(.failure(UserStoreError.fileNotFound))
+                    }
+                default:
+                    // Handle other HTTP errors
+                    OperationQueue.main.addOperation {
+                        completion(.failure(UserStoreError.serverError(statusCode: httpResponse.statusCode)))
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+
+    
+//    func callSendDashboardTableObjects(completion: @escaping (Result<[DashboardTableObject],Error>) -> Void){
+//        let request = requestStore.createRequestWithToken(endpoint: .send_dashboard_table_objects)
+//        let task = requestStore.session.dataTask(with: request) { data, urlResponse, error in
+//            guard let unwrapped_data = data else {
+//                OperationQueue.main.addOperation {
+//                    completion(.failure(UserStoreError.failedToRecieveServerResponse))
+//                }
+//                return
+//            }
+//            do {
+//                let jsonDecoder = JSONDecoder()
+//                let jsonDashboardTableObj = try jsonDecoder.decode([DashboardTableObject].self, from: unwrapped_data)
+//                OperationQueue.main.addOperation {
+//                    completion(.success(jsonDashboardTableObj))
+//                }
+//            } catch {
+//                print("did not get expected response from WSAPI - probably no file for user")
+//                OperationQueue.main.addOperation {
+//                    completion(.failure(UserStoreError.failedToRecievedExpectedResponse))
+//                }
+//            }
+//        }
+//        task.resume()
+//    }
     
     func writeUserJson(){
         var jsonData:Data!

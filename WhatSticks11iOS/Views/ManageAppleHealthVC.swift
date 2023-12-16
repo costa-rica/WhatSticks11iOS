@@ -192,7 +192,7 @@ class ManageAppleHealthVC: TemplateVC {
                     self.templateAlert(alertTitle: "Success", alertMessage: "Added \(responseDict["count_of_added_records"] ?? "<failed to get count_of_added_records key from response> ") records")
                     
                     
-                    for obj in self.userStore.arryDashHealthDataObj!{
+                    for obj in self.userStore.arryDataSourceObjects!{
                         if obj.name == "Apple Health Data"{
                             print("** unwp_count_of_entries: \(unwp_count_of_user_apple_health_records)")
                             obj.recordCount = unwp_count_of_user_apple_health_records
@@ -213,7 +213,7 @@ class ManageAppleHealthVC: TemplateVC {
         self.healthDataStore.callDeleteAppleHealthData { responseResult in
             switch responseResult{
             case .success(_):
-                if let unwp_arryDashHealthDataObj = self.userStore.arryDashHealthDataObj{
+                if let unwp_arryDashHealthDataObj = self.userStore.arryDataSourceObjects{
                     for obj in unwp_arryDashHealthDataObj{
                         if obj.name == "Apple Health Data"{
                             obj.recordCount = "0"

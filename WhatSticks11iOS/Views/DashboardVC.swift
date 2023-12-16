@@ -17,7 +17,7 @@ class DashboardVC: TemplateVC{
     var btnGoToManageDataVC=UIButton()
 
     var tblDashboard = UITableView()
-    var arryDashDataDict = [[String:String]]()
+    var dashboardTableObject: DashboardTableObject!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,17 +35,6 @@ class DashboardVC: TemplateVC{
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
         tblDashboard.refreshControl = refreshControl
-    }
-    func setup_arryDashDataDict(){
-        if let unwp_arry = self.userStore.arryDashHealthDataObj{
-            for obj in unwp_arry {
-                if  obj.name == "Apple Health Data"{
-                    if let unwp_arryDataDict = obj.arryDataDict{
-                        arryDashDataDict = unwp_arryDataDict
-                    }
-                }
-            }
-        }
     }
 
     func setup_tbl(){
@@ -82,20 +71,25 @@ class DashboardVC: TemplateVC{
     }
 
     @objc private func refreshData(_ sender: UIRefreshControl) {
-        self.userStore.callSendHealthDataObjects(login: false) { responseResult in
+        self.userStore.callSendDashboardTableObjects { responseResult in
             DispatchQueue.main.async {
                 switch responseResult {
-                case let .success(arryDashHealthDataObj):
-                    self.userStore.arryDashHealthDataObj = arryDashHealthDataObj
-                    self.setup_arryDashDataDict() // Updates data array
+                case let .success(jsonDashboardTableObj):
+                    self.userStore.arryDashboardTableObjects = jsonDashboardTableObj
+                    //self.setup_arryDashDataDict() // Updates data array
                     self.tblDashboard.reloadData() // Reloads table view
                     sender.endRefreshing()
 
                 case let .failure(error):
                     sender.endRefreshing() // Stop refreshing before showing alert
-
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
+                        if case UserStoreError.fileNotFound = error {
+                            print("* file not found error *")
+                            self.templateAlert(alertTitle: "Error", alertMessage: "Dashboard file not found")
+                        } else {
+                            print("**** wrong file not found error *")
+                            self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
+                        }
                     }
                 }
             }
@@ -121,14 +115,20 @@ extension DashboardVC: UITableViewDelegate{
 
 extension DashboardVC: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-
-        return arryDashDataDict.count-1
+        guard let arryIndepVarObjects = dashboardTableObject.arryIndepVarObjects else {
+            return 0
+        }
+        return arryIndepVarObjects.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DashboardTableCell", for: indexPath) as! DashboardTableCell
-//        let indVarName = self.arryDashDataDict[""]
-        cell.setupLabels(indepVarName: "Daily Steps", correlation: self.arryDashDataDict[0]["Daily Steps"] ?? "no value" )
+        guard let arryIndepVarObjects = dashboardTableObject.arryIndepVarObjects else {
+            print("- in cellForRowAt failed to get dashboardTableObject.arryIndepVarObjects ")
+            return cell
+        }
+        let indepVarObject = arryIndepVarObjects[indexPath.row]
+        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value" )
         return cell
     }
     

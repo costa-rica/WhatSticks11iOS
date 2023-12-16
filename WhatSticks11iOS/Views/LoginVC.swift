@@ -51,10 +51,18 @@ class LoginVC: TemplateVC {
                     self.txtEmail.text = ""
                     self.txtPassword.text = ""
                 }
-                self.userStore.callSendHealthDataObjects(login:true) { responseResult in
+                self.userStore.callSendDataSourceObjects { responseResult in
                     switch responseResult{
-                    case let .success(arryDashHealthDataObj):
-                        self.userStore.arryDashHealthDataObj = arryDashHealthDataObj
+                    case let .success(arryDataSourceObjects):
+                        self.userStore.arryDataSourceObjects = arryDataSourceObjects
+                        let dash_default = DashboardTableObject()
+                        dash_default.name = "Dependent default"
+                        let indepObj01 = IndepVarObject()
+                        indepObj01.name = "Indep default"
+                        indepObj01.correlationValue = "0.1"
+                        indepObj01.depVarName = "Dependent default"
+                        dash_default.arryIndepVarObjects = [indepObj01]
+                        self.userStore.arryDashboardTableObjects = [dash_default]
 
                         self.performSegue(withIdentifier: "goToDashboardVC", sender: self)
                     case let .failure(error):
@@ -319,6 +327,8 @@ class LoginVC: TemplateVC {
             dashboardVC.requestStore = self.requestStore
             dashboardVC.appleHealthDataFetcher = self.appleHealthDataFetcher
             dashboardVC.healthDataStore = self.healthDataStore
+            
+            dashboardVC.dashboardTableObject = self.userStore.arryDashboardTableObjects![0]
         }
     }
     
