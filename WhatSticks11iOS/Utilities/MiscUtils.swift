@@ -61,4 +61,3 @@ func formatWithCommas(number: Int) -> String {
     formatter.numberStyle = .decimal
     return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
 }
-

@@ -21,11 +21,14 @@ class DashboardVC: TemplateVC{
     
     var btnCheckDashTableObj = UIButton()
     
+    var lblDashboardTitle=UILabel()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Dashboard"
         print("- in DashboardVC viewDidLoad -")
+        setup_lblDashboardTitle()
         setup_btnGoToManageDataVC()
         setup_tbl()
         tblDashboard.delegate = self
@@ -39,12 +42,22 @@ class DashboardVC: TemplateVC{
         tblDashboard.refreshControl = refreshControl
         setup_btnCheckDashTableObj()
     }
+    
+    func setup_lblDashboardTitle(){
+        lblDashboardTitle.text = self.dashboardTableObject.name ?? "No title"
+        lblDashboardTitle.font = UIFont(name: "ArialRoundedMTBold", size: 45)
+        lblDashboardTitle.translatesAutoresizingMaskIntoConstraints = false
+        lblDashboardTitle.accessibilityIdentifier="lblDashboardTitle"
+        view.addSubview(lblDashboardTitle)
+        lblDashboardTitle.topAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: bodyTopPaddingPercentage/4)).isActive=true
+        lblDashboardTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: bodySidePaddingPercentage)).isActive=true
+    }
 
     func setup_tbl(){
         tblDashboard.accessibilityIdentifier = "tblDashboard"
         tblDashboard.translatesAutoresizingMaskIntoConstraints=false
         view.addSubview(tblDashboard)
-        tblDashboard.topAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: 5)).isActive=true
+        tblDashboard.topAnchor.constraint(equalTo: lblDashboardTitle.bottomAnchor, constant: heightFromPct(percent: 2)).isActive=true
         tblDashboard.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive=true
         tblDashboard.bottomAnchor.constraint(equalTo: vwFooter.topAnchor).isActive=true
         tblDashboard.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive=true
@@ -173,9 +186,8 @@ class DashboardTableCell: UITableViewCell {
     // Properties
     var dblCorrelation: Double = 0.0 {
         didSet {
-            // Update the circle color based on dblCorrelation value
-            // This is just a placeholder, you can modify the logic as needed
-            circleView.backgroundColor = dblCorrelation > 0.5 ? .systemBlue : .systemGreen
+            let normalizedValue = CGFloat((dblCorrelation + 1) / 2) // Normalize between 0 and 1
+            circleView.backgroundColor = UIColor(red: 0.5, green: 0.5, blue: normalizedValue, alpha: 1.0)
         }
     }
 
@@ -243,6 +255,8 @@ class DashboardTableCell: UITableViewCell {
     func setupLabels(indepVarName:String, correlation:String){
         lblIndVar.text = indepVarName
         lblCorrelation.text = String(format: "%.2f", Double(correlation) ?? "No data")
+//        guard var unwp_correlation = correlation else {return}
+        dblCorrelation = Double(correlation) ?? 0.9
     }
 }
 
