@@ -67,6 +67,7 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
             switch responseResult{
             case let .success(jsonDataSourceObj):
                 self.userStore.arryDataSourceObjects = jsonDataSourceObj
+                self.userStore.writeDataSourceJson()
                 self.refreshValuesInTable()
             case let .failure(error):
                 sender.endRefreshing()

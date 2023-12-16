@@ -196,6 +196,7 @@ class ManageAppleHealthVC: TemplateVC {
                         if obj.name == "Apple Health Data"{
                             print("** unwp_count_of_entries: \(unwp_count_of_user_apple_health_records)")
                             obj.recordCount = unwp_count_of_user_apple_health_records
+                            self.userStore.writeDataSourceJson()
                         }
                     }
                 }
@@ -217,6 +218,7 @@ class ManageAppleHealthVC: TemplateVC {
                     for obj in unwp_arryDashHealthDataObj{
                         if obj.name == "Apple Health Data"{
                             obj.recordCount = "0"
+                            self.userStore.writeDataSourceJson()
                         }
                     }
                 }

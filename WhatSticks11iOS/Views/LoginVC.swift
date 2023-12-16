@@ -55,14 +55,15 @@ class LoginVC: TemplateVC {
                     switch responseResult{
                     case let .success(arryDataSourceObjects):
                         self.userStore.arryDataSourceObjects = arryDataSourceObjects
-                        let dash_default = DashboardTableObject()
-                        dash_default.name = "Dependent default"
-                        let indepObj01 = IndepVarObject()
-                        indepObj01.name = "Indep default"
-                        indepObj01.correlationValue = "0.1"
-                        indepObj01.depVarName = "Dependent default"
-                        dash_default.arryIndepVarObjects = [indepObj01]
-                        self.userStore.arryDashboardTableObjects = [dash_default]
+                        self.userStore.writeDataSourceJson()
+//                        let dash_default = DashboardTableObject()
+//                        dash_default.name = "Dependent default"
+//                        let indepObj01 = IndepVarObject()
+//                        indepObj01.name = "Indep default"
+//                        indepObj01.correlationValue = "0.1"
+//                        indepObj01.depVarName = "Dependent default"
+//                        dash_default.arryIndepVarObjects = [indepObj01]
+//                        self.userStore.arryDashboardTableObjects = [dash_default]
 
                         self.performSegue(withIdentifier: "goToDashboardVC", sender: self)
                     case let .failure(error):
@@ -93,16 +94,37 @@ class LoginVC: TemplateVC {
         setup_stckVwRememberMe()
         setupForgotPasswordButton()
         setupSignUpLabel()
+        setup_checkFiles()
+    }
+    func setup_checkFiles(){
         userStore.checkUserJson { responseResult in
             DispatchQueue.main.async {
                 switch responseResult{
                 case let .success(user_obj):
                     self.txtEmail.text=user_obj.email
                     self.txtPassword.text=user_obj.password
-//                    self.setup_lblLogout()
                 case .failure(_):
                     print("no user found")
-//                    self.setupSignUpLabel()
+                }
+            }
+        }
+        userStore.checkDashboardJson { result in
+            DispatchQueue.main.async{
+                switch result{
+                case .success(_):
+                    print("arryDashboardTableObjects.json file found")
+                case let .failure(error):
+                    print("No arryDashboardTableObjects.json file found, error: \(error)")
+                }
+            }
+        }
+        userStore.checkDataSourceJson { result in
+            DispatchQueue.main.async{
+                switch result{
+                case .success(_):
+                    print("arryDataSourceObjects.json file found")
+                case let .failure(error):
+                    print("No arryDataSourceObjects.json file found, error: \(error)")
                 }
             }
         }
@@ -329,6 +351,17 @@ class LoginVC: TemplateVC {
             dashboardVC.healthDataStore = self.healthDataStore
             
             dashboardVC.dashboardTableObject = self.userStore.arryDashboardTableObjects![0]
+            
+            guard let _ = self.userStore.arryDataSourceObjects else {
+                print("** should NOT fire arryDataSourceObjects ***")
+                userStore.arryDataSourceObjects = [DataSourceObject]()
+                return
+            }
+            guard let _ = self.userStore.arryDashboardTableObjects else {
+                    print("** should NOT fire arryDashboardTableObjects ***")
+                userStore.arryDashboardTableObjects = [DashboardTableObject]()
+                return
+            }
         }
     }
     

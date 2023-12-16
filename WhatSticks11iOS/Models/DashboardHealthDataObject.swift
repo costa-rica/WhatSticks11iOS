@@ -7,11 +7,6 @@
 
 import Foundation
 
-//class DashboardHealthDataObject: Codable{
-//    var name: String?
-//    var recordCount: String?
-//    var arryDataDict: [[String:String]]?
-//}
 
 class DataSourceObject: Codable{
     var name:String?//name for display on ManageDataVC

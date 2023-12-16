@@ -19,6 +19,8 @@ class DashboardVC: TemplateVC{
     var tblDashboard = UITableView()
     var dashboardTableObject: DashboardTableObject!
     
+    var btnCheckDashTableObj = UIButton()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
@@ -35,6 +37,7 @@ class DashboardVC: TemplateVC{
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
         tblDashboard.refreshControl = refreshControl
+        setup_btnCheckDashTableObj()
     }
 
     func setup_tbl(){
@@ -47,7 +50,30 @@ class DashboardVC: TemplateVC{
         tblDashboard.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive=true
         tblDashboard.translatesAutoresizingMaskIntoConstraints=false
     }
-    
+    func setup_btnCheckDashTableObj(){
+        view.addSubview(btnCheckDashTableObj)
+        btnCheckDashTableObj.translatesAutoresizingMaskIntoConstraints=false
+        btnCheckDashTableObj.accessibilityIdentifier="btnCheckDashTableObj"
+        btnCheckDashTableObj.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnCheckDashTableObj.addTarget(self, action: #selector(touchUpInside_btnCheckDashTableObj(_:)), for: .touchUpInside)
+        // vwFooter button Placement
+        btnCheckDashTableObj.topAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
+        btnCheckDashTableObj.trailingAnchor.constraint(equalTo: btnGoToManageDataVC.leadingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+        btnCheckDashTableObj.backgroundColor = .systemPink
+        btnCheckDashTableObj.layer.cornerRadius = 10
+        btnCheckDashTableObj.setTitle(" Check Button ", for: .normal)
+    }
+    @objc func touchUpInside_btnCheckDashTableObj(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
+            sender.transform = .identity
+        }, completion: nil)
+//        performSegue(withIdentifier: "goToManageDataVC", sender: self)
+        print("-- checking dashboardTableObject")
+        print("Name of table: \(dashboardTableObject.name ?? "No name")")
+        print("Name of Indep Var\(dashboardTableObject.arryIndepVarObjects![0].name)")
+        print("Correaltion: \(dashboardTableObject.arryIndepVarObjects![0].correlationValue )")
+
+    }
     
     func setup_btnGoToManageDataVC(){
         view.addSubview(btnGoToManageDataVC)
@@ -75,7 +101,9 @@ class DashboardVC: TemplateVC{
             DispatchQueue.main.async {
                 switch responseResult {
                 case let .success(jsonDashboardTableObj):
+                    print("*** i think this shoudl update table ***")
                     self.userStore.arryDashboardTableObjects = jsonDashboardTableObj
+                    self.userStore.writeDashboardJson()
                     //self.setup_arryDashDataDict() // Updates data array
                     self.tblDashboard.reloadData() // Reloads table view
                     sender.endRefreshing()
@@ -87,7 +115,7 @@ class DashboardVC: TemplateVC{
                             print("* file not found error *")
                             self.templateAlert(alertTitle: "Error", alertMessage: "Dashboard file not found")
                         } else {
-                            print("**** wrong file not found error *")
+                            
                             self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
                         }
                     }
@@ -115,10 +143,15 @@ extension DashboardVC: UITableViewDelegate{
 
 extension DashboardVC: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let arryIndepVarObjects = dashboardTableObject.arryIndepVarObjects else {
+        
+//        guard let arryIndepVarObjects = dashboardTableObject.arryIndepVarObjects else {
+//            return 0
+//        }
+//        return arryIndepVarObjects.count
+        guard let arryIndVarObj = userStore.arryDashboardTableObjects else {
             return 0
         }
-        return arryIndepVarObjects.count
+        return arryIndVarObj[0].arryIndepVarObjects!.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -163,7 +196,7 @@ class DashboardTableCell: UITableViewCell {
     let circleView: UIView = {
         let view = UIView()
         view.backgroundColor = .systemBlue
-        view.layer.cornerRadius = 10 // Adjust as needed
+        view.layer.cornerRadius = heightFromPct(percent: 10) * 0.5 // Adjust as needed
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -180,32 +213,36 @@ class DashboardTableCell: UITableViewCell {
 
     // Setup views and constraints
     private func setupViews() {
-        addSubview(lblIndVar)
-        addSubview(circleView)
-        addSubview(lblCorrelation)
+        contentView.addSubview(lblIndVar)
+        contentView.addSubview(circleView)
+        contentView.addSubview(lblCorrelation)
 
         // Layout constraints
         NSLayoutConstraint.activate([
             // lblIndVar constraints
-            lblIndVar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            lblIndVar.centerYAnchor.constraint(equalTo: centerYAnchor),
+            lblIndVar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
+            lblIndVar.centerYAnchor.constraint(greaterThanOrEqualTo: contentView.centerYAnchor), // Added top constraint
 
             // circleView constraints
-            circleView.leadingAnchor.constraint(equalTo: lblIndVar.trailingAnchor, constant: 8),
-            circleView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            circleView.widthAnchor.constraint(equalToConstant: 20), // Adjust size as needed
-            circleView.heightAnchor.constraint(equalToConstant: 20),
+            circleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
+            circleView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            circleView.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
+            circleView.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
 
             // lblCorrelation constraints
-            lblCorrelation.leadingAnchor.constraint(equalTo: circleView.trailingAnchor, constant: 8),
-            lblCorrelation.centerYAnchor.constraint(equalTo: centerYAnchor)
+            lblCorrelation.centerXAnchor.constraint(equalTo: circleView.centerXAnchor),
+            lblCorrelation.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+
+            // Ensure that the bottom of the circleView is not clipped
+            circleView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8) // Added bottom constraint
         ])
     }
+
 
     // Additional methods as needed
     func setupLabels(indepVarName:String, correlation:String){
         lblIndVar.text = indepVarName
-        lblCorrelation.text = correlation
+        lblCorrelation.text = String(format: "%.2f", Double(correlation) ?? "No data")
     }
 }
 
