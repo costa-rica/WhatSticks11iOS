@@ -41,7 +41,15 @@ class DashboardVC: TemplateVC{
         refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
         tblDashboard.refreshControl = refreshControl
         setup_btnCheckDashTableObj()
+        
+
     }
+//    override func viewWillAppear(_ animated: Bool) {
+//        DispatchQueue.main.async{
+//            self.isInitialViewController=false
+//            self.changeLogo()
+//        }
+//    }
     
     func setup_lblDashboardTitle(){
         lblDashboardTitle.text = self.dashboardTableObject.name ?? "No title"

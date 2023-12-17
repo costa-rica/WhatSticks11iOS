@@ -57,13 +57,6 @@ class LoginVC: TemplateVC {
                         self.userStore.arryDataSourceObjects = arryDataSourceObjects
                         self.userStore.writeDataSourceJson()
 //                        let dash_default = DashboardTableObject()
-//                        dash_default.name = "Dependent default"
-//                        let indepObj01 = IndepVarObject()
-//                        indepObj01.name = "Indep default"
-//                        indepObj01.correlationValue = "0.1"
-//                        indepObj01.depVarName = "Dependent default"
-//                        dash_default.arryIndepVarObjects = [indepObj01]
-//                        self.userStore.arryDashboardTableObjects = [dash_default]
 
                         self.performSegue(withIdentifier: "goToDashboardVC", sender: self)
                     case let .failure(error):
@@ -73,6 +66,8 @@ class LoginVC: TemplateVC {
             }
         }
     }
+    
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -96,6 +91,10 @@ class LoginVC: TemplateVC {
         setupSignUpLabel()
         setup_checkFiles()
     }
+    override func viewWillAppear(_ animated: Bool) {
+        self.isInitialViewController=true
+        self.changeLogoForLoginVC()
+    }// This is just to set up logo in vwTopBar
     func setup_checkFiles(){
         userStore.checkUserJson { responseResult in
             DispatchQueue.main.async {

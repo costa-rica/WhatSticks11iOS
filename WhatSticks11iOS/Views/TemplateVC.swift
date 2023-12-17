@@ -19,8 +19,10 @@ class TemplateVC: UIViewController {
     var bodyTopPaddingPercentage = Float(20.0)
     var spinnerView: UIView?
     var messageLabel = UILabel()
-
+    var imgLogoTrailingAnchor: NSLayoutConstraint!
     
+    var isInitialViewController: Bool = false
+     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -47,8 +49,10 @@ class TemplateVC: UIViewController {
         vwTopBar.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         vwTopBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.10).isActive = true
         
-        if let unwrapped_image = UIImage(named: "wsLogo192") {
-            imgVwLogo.image = unwrapped_image.scaleImage(toSize: CGSize(width: 25, height: 25))
+
+//        if let unwrapped_image = UIImage(named: "wsLogo192") {
+        if let unwrapped_image = UIImage(named: "wsLogoNoNameMedium") {
+            imgVwLogo.image = unwrapped_image.scaleImage(toSize: CGSize(width: 15, height: 15))
         }
 
         // Setup labels and image view
@@ -70,8 +74,10 @@ class TemplateVC: UIViewController {
         vwTopBar.addSubview(imgVwLogo)
         imgVwLogo.accessibilityIdentifier = "imgVwLogo"
         imgVwLogo.heightAnchor.constraint(equalTo: imgVwLogo.widthAnchor, multiplier: 1.0).isActive = true
-        imgVwLogo.topAnchor.constraint(equalTo: vwTopSafeBar.bottomAnchor).isActive=true
-        imgVwLogo.trailingAnchor.constraint(equalTo: vwTopBar.trailingAnchor,constant: widthFromPct(percent: -bodySidePaddingPercentage)).isActive=true
+//        imgVwLogo.topAnchor.constraint(equalTo: vwTopSafeBar.bottomAnchor).isActive=true
+        imgVwLogo.centerYAnchor.constraint(equalTo: vwTopBar.centerYAnchor).isActive=true
+        imgLogoTrailingAnchor = imgVwLogo.trailingAnchor.constraint(equalTo: vwTopBar.trailingAnchor,constant: widthFromPct(percent: -1))
+        imgLogoTrailingAnchor.isActive=true
 
 
         // Setup vwFooter
@@ -83,6 +89,19 @@ class TemplateVC: UIViewController {
         vwFooter.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         vwFooter.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.1).isActive = true
     }
+    
+    func changeLogoForLoginVC(){
+        print("- changeLogo accessed ")
+        print("isInitialViewController: \(isInitialViewController)")
+        let logoImageName = isInitialViewController ? "wsLogo192" : "wsLogoSmallNoName"
+        if let unwrapped_image = UIImage(named: logoImageName) {
+            imgVwLogo.image = unwrapped_image.scaleImage(toSize: CGSize(width: 23, height: 23))
+        }
+        imgLogoTrailingAnchor.isActive=false
+        imgVwLogo.trailingAnchor.constraint(equalTo: vwTopBar.trailingAnchor,constant: widthFromPct(percent: -bodySidePaddingPercentage)).isActive=true
+        
+    }
+    
     func setScreenNameFontSize(size: CGFloat? = nil) {
         let fontSize = size ?? 33 // Default to 33 if no size is provided
         lblScreenName.font = UIFont(name: "ArialRoundedMTBold", size: fontSize)
@@ -113,8 +132,6 @@ class TemplateVC: UIViewController {
         activityIndicator.center = spinnerView!.center
         activityIndicator.startAnimating()
         spinnerView?.addSubview(activityIndicator)
-
-        
         messageLabel.text = "This is a lot of data so it may take more than a minute"
         messageLabel.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         messageLabel.numberOfLines = 0
@@ -136,6 +153,5 @@ class TemplateVC: UIViewController {
         spinnerView?.removeFromSuperview()
         spinnerView = nil
     }
-    
 }
 
