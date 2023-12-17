@@ -124,6 +124,11 @@ class DashboardVC: TemplateVC{
                 case let .success(jsonDashboardTableObj):
                     print("*** i think this shoudl update table ***")
                     self.userStore.arryDashboardTableObjects = jsonDashboardTableObj
+                    for obj in jsonDashboardTableObj{
+                        if obj.name == self.lblDashboardTitle.text{
+                            self.dashboardTableObject = obj
+                        }
+                    }
                     self.userStore.writeDashboardJson()
                     //self.setup_arryDashDataDict() // Updates data array
                     self.tblDashboard.reloadData() // Reloads table view
