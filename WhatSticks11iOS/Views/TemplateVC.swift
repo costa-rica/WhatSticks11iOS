@@ -27,7 +27,6 @@ class TemplateVC: UIViewController {
         super.viewDidLoad()
         setupViews()
     }
-
     private func setupViews() {
         // Setup vwTopSafeBar
         vwTopSafeBar.backgroundColor = UIColor(named: "gray02")
@@ -38,7 +37,6 @@ class TemplateVC: UIViewController {
         vwTopSafeBar.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         vwTopSafeBar.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         vwTopSafeBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.05).isActive = true
-        
         // Setup vwTopBar
         vwTopBar.backgroundColor = UIColor(named: "gray02")
         view.addSubview(vwTopBar)
@@ -48,38 +46,29 @@ class TemplateVC: UIViewController {
         vwTopBar.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         vwTopBar.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         vwTopBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.10).isActive = true
-        
-
 //        if let unwrapped_image = UIImage(named: "wsLogo192") {
         if let unwrapped_image = UIImage(named: "wsLogoNoNameMedium") {
             imgVwLogo.image = unwrapped_image.scaleImage(toSize: CGSize(width: 15, height: 15))
         }
-
         // Setup labels and image view
         lblScreenName.translatesAutoresizingMaskIntoConstraints=false
         lblUsername.translatesAutoresizingMaskIntoConstraints=false
         vwTopBar.addSubview(lblScreenName)
         vwTopBar.addSubview(lblUsername)
-        
         lblScreenName.topAnchor.constraint(equalTo: vwTopBar.topAnchor,constant: heightFromPct(percent: 1)).isActive=true
         lblScreenName.centerXAnchor.constraint(equalTo: vwTopBar.centerXAnchor).isActive=true
         lblUsername.bottomAnchor.constraint(equalTo: vwTopBar.bottomAnchor,constant:heightFromPct(percent: -1)).isActive=true
         lblUsername.centerXAnchor.constraint(equalTo: vwTopBar.centerXAnchor).isActive=true
-//        lblScreenName.font = UIFont(name: "ArialRoundedMTBold", size: 33)
         setScreenNameFontSize()
         lblUsername.font = UIFont(name: "ArialRoundedMTBold", size: 18)
-        
         //setup imgVwLogo
         imgVwLogo.translatesAutoresizingMaskIntoConstraints = false
         vwTopBar.addSubview(imgVwLogo)
         imgVwLogo.accessibilityIdentifier = "imgVwLogo"
         imgVwLogo.heightAnchor.constraint(equalTo: imgVwLogo.widthAnchor, multiplier: 1.0).isActive = true
-//        imgVwLogo.topAnchor.constraint(equalTo: vwTopSafeBar.bottomAnchor).isActive=true
         imgVwLogo.centerYAnchor.constraint(equalTo: vwTopBar.centerYAnchor).isActive=true
         imgLogoTrailingAnchor = imgVwLogo.trailingAnchor.constraint(equalTo: vwTopBar.trailingAnchor,constant: widthFromPct(percent: -1))
         imgLogoTrailingAnchor.isActive=true
-
-
         // Setup vwFooter
         vwFooter.backgroundColor = UIColor(named: "gray02")
         view.addSubview(vwFooter)
@@ -91,15 +80,12 @@ class TemplateVC: UIViewController {
     }
     
     func changeLogoForLoginVC(){
-        print("- changeLogo accessed ")
-        print("isInitialViewController: \(isInitialViewController)")
         let logoImageName = isInitialViewController ? "wsLogo192" : "wsLogoSmallNoName"
         if let unwrapped_image = UIImage(named: logoImageName) {
             imgVwLogo.image = unwrapped_image.scaleImage(toSize: CGSize(width: 23, height: 23))
         }
         imgLogoTrailingAnchor.isActive=false
         imgVwLogo.trailingAnchor.constraint(equalTo: vwTopBar.trailingAnchor,constant: widthFromPct(percent: -bodySidePaddingPercentage)).isActive=true
-        
     }
     
     func setScreenNameFontSize(size: CGFloat? = nil) {
@@ -111,7 +97,6 @@ class TemplateVC: UIViewController {
             sender.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
         }, completion: nil)
     }
-    
     func templateAlert(alertTitle:String = "Alert",alertMessage: String,  backScreen: Bool = false) {
         let alert = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
         // This is used to go back
@@ -122,11 +107,10 @@ class TemplateVC: UIViewController {
         }))
         self.present(alert, animated: true, completion: nil)
     }
-    
     func showSpinner() {
         spinnerView = UIView(frame: self.view.bounds)
+        
         spinnerView?.backgroundColor = UIColor(white: 0, alpha: 0.5)
-
         let activityIndicator = UIActivityIndicatorView(style: .large)
         activityIndicator.transform = CGAffineTransform(scaleX: 2, y: 2)// makes spinner bigger
         activityIndicator.center = spinnerView!.center
@@ -141,17 +125,21 @@ class TemplateVC: UIViewController {
         messageLabel.frame = CGRect(x: 0, y: activityIndicator.frame.maxY + 20, width: spinnerView!.bounds.width, height: 50)
         messageLabel.isHidden = true
         spinnerView?.addSubview(messageLabel)
-
         self.view.addSubview(spinnerView!)
-
+        spinnerView?.accessibilityIdentifier = "spinnerView"
+        activityIndicator.accessibilityIdentifier = "activityIndicator"
         // Timer to show the label after 3 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
             self.messageLabel.isHidden = false
         }
+        print("---- TemplateVC elements ----")
+        self.view.printSubviews()
+        print("---- TemplateVC END elements ----")
     }
     func removeSpinner() {
         spinnerView?.removeFromSuperview()
         spinnerView = nil
+        print("removeSpinner() completed")
     }
 }
 

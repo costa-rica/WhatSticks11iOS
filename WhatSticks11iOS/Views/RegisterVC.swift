@@ -174,7 +174,7 @@ class RegisterVC: TemplateVC {
             DispatchQueue.main.async {
                 switch responseResultRegister {
                 case .success(_):
-                    self.templateAlert(alertTitle: "Success!",alertMessage: "Successfully registered", backScreen: true)
+                    self.successAlert()
 
                 case .failure(let error):
                     let errorMessage: String
@@ -197,6 +197,25 @@ class RegisterVC: TemplateVC {
                 }
             }
         }
+    }
+    
+    
+    func successAlert() {
+        let alert = UIAlertController(title: "Success!", message: "", preferredStyle: .alert)
+        // This is used to go back
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+//            DispatchQueue.main.async{
+                let loginVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
+                loginVC.txtEmail.text = self.txtEmail.text
+                loginVC.txtPassword.text = self.txtPassword.text
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let sceneDelegate = windowScene.delegate as? SceneDelegate,
+                   let window = sceneDelegate.window {
+                    window.rootViewController = UINavigationController(rootViewController: loginVC)
+                }
+//            }
+        }))
+        self.present(alert, animated: true, completion: nil)
     }
     
 }

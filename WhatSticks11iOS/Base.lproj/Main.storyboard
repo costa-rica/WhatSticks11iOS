@@ -11,7 +11,7 @@
         <!--LoginVC-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="LoginVC" customModule="WhatSticks11iOS" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="LoginVC" id="BYZ-38-t0r" customClass="LoginVC" customModule="WhatSticks11iOS" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -60,11 +60,28 @@
                     <navigationItem key="navigationItem" id="Yf9-Ve-MBq"/>
                     <connections>
                         <segue destination="PRz-FB-1te" kind="show" identifier="goToManageAppleHealthVC" id="SqL-SW-gtM"/>
+                        <segue destination="uUO-Pg-vLu" kind="show" identifier="goToManageUserVC" id="1Xb-vV-Q9t"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ukZ-ig-TeJ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3000" y="-3"/>
+        </scene>
+        <!--Manage UserVC-->
+        <scene sceneID="CbR-bx-TRS">
+            <objects>
+                <viewController id="uUO-Pg-vLu" customClass="ManageUserVC" customModule="WhatSticks11iOS" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="UW3-U4-Csa">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="j5I-YQ-KcW"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Gqy-Nk-wV0"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UPT-pn-7xo" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4062" y="-488"/>
         </scene>
         <!--Manage Apple HealthVC-->
         <scene sceneID="8YU-7i-cdw">
@@ -80,7 +97,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="2O1-tl-5a8" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4100" y="-4"/>
+            <point key="canvasLocation" x="4063" y="321"/>
         </scene>
         <!--RegisterVC-->
         <scene sceneID="NDh-Sf-GTh">

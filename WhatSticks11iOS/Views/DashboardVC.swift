@@ -13,24 +13,38 @@ class DashboardVC: TemplateVC{
     var requestStore: RequestStore!
     var appleHealthDataFetcher:AppleHealthDataFetcher!
     var healthDataStore:HealthDataStore!
-    
     var btnGoToManageDataVC=UIButton()
-
-    var tblDashboard = UITableView()
-    var dashboardTableObject: DashboardTableObject!
-    
+    var tblDashboard:UITableView!
+    var dashboardTableObject: DashboardTableObject?
     var btnCheckDashTableObj = UIButton()
-    
     var lblDashboardTitle=UILabel()
+    
+    var btnRefreshDashboard:UIButton!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Dashboard"
         print("- in DashboardVC viewDidLoad -")
-        setup_lblDashboardTitle()
+        
         setup_btnGoToManageDataVC()
+        if let _ = self.dashboardTableObject {
+            dashboardTableObjectExists()
+
+        }
+        else{
+            setup_btnRefreshDashboard()
+        }
+      
+
+    }
+
+    func dashboardTableObjectExists(){
+        setup_lblDashboardTitle()
+        tblDashboard = UITableView()
         setup_tbl()
+        
         tblDashboard.delegate = self
         tblDashboard.dataSource = self
         tblDashboard.register(DashboardTableCell.self, forCellReuseIdentifier: "DashboardTableCell")
@@ -40,19 +54,12 @@ class DashboardVC: TemplateVC{
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
         tblDashboard.refreshControl = refreshControl
-        setup_btnCheckDashTableObj()
-        
-
+        if let _ = btnRefreshDashboard{
+            btnRefreshDashboard.removeFromSuperview()
+        }
     }
-//    override func viewWillAppear(_ animated: Bool) {
-//        DispatchQueue.main.async{
-//            self.isInitialViewController=false
-//            self.changeLogo()
-//        }
-//    }
-    
     func setup_lblDashboardTitle(){
-        lblDashboardTitle.text = self.dashboardTableObject.name ?? "No title"
+        lblDashboardTitle.text = self.dashboardTableObject!.name ?? "No title"
         lblDashboardTitle.font = UIFont(name: "ArialRoundedMTBold", size: 45)
         lblDashboardTitle.translatesAutoresizingMaskIntoConstraints = false
         lblDashboardTitle.accessibilityIdentifier="lblDashboardTitle"
@@ -60,7 +67,6 @@ class DashboardVC: TemplateVC{
         lblDashboardTitle.topAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: bodyTopPaddingPercentage/4)).isActive=true
         lblDashboardTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: bodySidePaddingPercentage)).isActive=true
     }
-
     func setup_tbl(){
         tblDashboard.accessibilityIdentifier = "tblDashboard"
         tblDashboard.translatesAutoresizingMaskIntoConstraints=false
@@ -71,31 +77,6 @@ class DashboardVC: TemplateVC{
         tblDashboard.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive=true
         tblDashboard.translatesAutoresizingMaskIntoConstraints=false
     }
-    func setup_btnCheckDashTableObj(){
-        view.addSubview(btnCheckDashTableObj)
-        btnCheckDashTableObj.translatesAutoresizingMaskIntoConstraints=false
-        btnCheckDashTableObj.accessibilityIdentifier="btnCheckDashTableObj"
-        btnCheckDashTableObj.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
-        btnCheckDashTableObj.addTarget(self, action: #selector(touchUpInside_btnCheckDashTableObj(_:)), for: .touchUpInside)
-        // vwFooter button Placement
-        btnCheckDashTableObj.topAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
-        btnCheckDashTableObj.trailingAnchor.constraint(equalTo: btnGoToManageDataVC.leadingAnchor, constant: widthFromPct(percent: -2)).isActive=true
-        btnCheckDashTableObj.backgroundColor = .systemPink
-        btnCheckDashTableObj.layer.cornerRadius = 10
-        btnCheckDashTableObj.setTitle(" Check Button ", for: .normal)
-    }
-    @objc func touchUpInside_btnCheckDashTableObj(_ sender: UIButton) {
-        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
-            sender.transform = .identity
-        }, completion: nil)
-//        performSegue(withIdentifier: "goToManageDataVC", sender: self)
-        print("-- checking dashboardTableObject")
-        print("Name of table: \(dashboardTableObject.name ?? "No name")")
-        print("Name of Indep Var\(dashboardTableObject.arryIndepVarObjects![0].name)")
-        print("Correaltion: \(dashboardTableObject.arryIndepVarObjects![0].correlationValue )")
-
-    }
-    
     func setup_btnGoToManageDataVC(){
         view.addSubview(btnGoToManageDataVC)
         btnGoToManageDataVC.translatesAutoresizingMaskIntoConstraints=false
@@ -117,19 +98,70 @@ class DashboardVC: TemplateVC{
 
     }
 
+    func setup_btnRefreshDashboard(){
+        btnRefreshDashboard = UIButton()
+        view.addSubview(btnRefreshDashboard)
+        btnRefreshDashboard.translatesAutoresizingMaskIntoConstraints=false
+        btnRefreshDashboard.accessibilityIdentifier="btnRefreshDashboard"
+        btnRefreshDashboard.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnRefreshDashboard.addTarget(self, action: #selector(touchUpInside_btnRefreshDashboard(_:)), for: .touchUpInside)
+        // vwFooter button Placement
+        btnRefreshDashboard.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -2)).isActive=true
+        btnRefreshDashboard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+        btnRefreshDashboard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+        btnRefreshDashboard.backgroundColor = .systemGray
+        btnRefreshDashboard.layer.cornerRadius = 10
+        btnRefreshDashboard.setTitle(" Refresh Table ", for: .normal)
+    }
+    @objc func touchUpInside_btnRefreshDashboard(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
+            sender.transform = .identity
+        }, completion: nil)
+        
+        self.userStore.callSendDashboardTableObjects { responseResult in
+            DispatchQueue.main.async {
+                switch responseResult {
+                case let .success(arryDashboardTableObjects):
+                    print("- table update")
+                    self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
+                    for obj in arryDashboardTableObjects{
+                        if obj.name == self.lblDashboardTitle.text{
+                            self.dashboardTableObject = obj
+                            self.dashboardTableObjectExists()
+                        }
+                    }
+                    self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
+                case let .failure(error):
+                       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        if case UserStoreError.fileNotFound = error {
+                            print("* file not found error *")
+                            self.templateAlert(alertTitle: "Error", alertMessage: "Dashboard file not found")
+                        } else {
+                            
+                            self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
     @objc private func refreshData(_ sender: UIRefreshControl) {
         self.userStore.callSendDashboardTableObjects { responseResult in
             DispatchQueue.main.async {
                 switch responseResult {
-                case let .success(jsonDashboardTableObj):
-                    print("*** i think this shoudl update table ***")
-                    self.userStore.arryDashboardTableObjects = jsonDashboardTableObj
-                    for obj in jsonDashboardTableObj{
+                case let .success(arryDashboardTableObjects):
+                    print("- table updated")
+                    self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
+                    for obj in arryDashboardTableObjects{
                         if obj.name == self.lblDashboardTitle.text{
                             self.dashboardTableObject = obj
+//                            print("correaltion for stepcount: \(obj.arryIndepVarObjects![0].correlationValue)")
                         }
                     }
-                    self.userStore.writeDashboardJson()
+//                    self.userStore.writeDashboardJson()
+                    self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
                     //self.setup_arryDashDataDict() // Updates data array
                     self.tblDashboard.reloadData() // Reloads table view
                     sender.endRefreshing()
@@ -182,7 +214,7 @@ extension DashboardVC: UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DashboardTableCell", for: indexPath) as! DashboardTableCell
-        guard let arryIndepVarObjects = dashboardTableObject.arryIndepVarObjects else {
+        guard let arryIndepVarObjects = dashboardTableObject!.arryIndepVarObjects else {
             print("- in cellForRowAt failed to get dashboardTableObject.arryIndepVarObjects ")
             return cell
         }

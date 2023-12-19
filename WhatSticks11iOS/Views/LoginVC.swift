@@ -22,9 +22,9 @@ class LoginVC: TemplateVC {
     let stckVwEmailRow = UIStackView()//accessIdentifier set
     let stckVwPasswordRow = UIStackView()//accessIdentifier set
     let lblEmail = UILabel()
-    let txtEmail = PaddedTextField()
+    var txtEmail = PaddedTextField()
     let lblPassword = UILabel()
-    let txtPassword = PaddedTextField()
+    var txtPassword = PaddedTextField()
     let btnShowPassword = UIButton()
     var btnLogin=UIButton()
     
@@ -45,9 +45,11 @@ class LoginVC: TemplateVC {
         didSet{
             if token != "token"{
                 if swRememberMe.isOn{
-                    self.userStore.writeUserJson()
+//                    self.userStore.writeUserJson()
+                    self.userStore.writeObjectToJsonFile(object: self.userStore.user, filename: "user.json")
                 } else {
-                    self.userStore.deleteUserJsonFile()
+//                    self.userStore.deleteUserJsonFile()
+                    self.userStore.deleteJsonFile(filename: "user.json")
                     self.txtEmail.text = ""
                     self.txtPassword.text = ""
                 }
@@ -55,7 +57,8 @@ class LoginVC: TemplateVC {
                     switch responseResult{
                     case let .success(arryDataSourceObjects):
                         self.userStore.arryDataSourceObjects = arryDataSourceObjects
-                        self.userStore.writeDataSourceJson()
+//                        self.userStore.writeDataSourceJson()
+                        self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
 //                        let dash_default = DashboardTableObject()
 
                         self.performSegue(withIdentifier: "goToDashboardVC", sender: self)
@@ -245,6 +248,7 @@ class LoginVC: TemplateVC {
             DispatchQueue.main.async {
             switch responseResultLogin{
             case let .success(user_obj):
+                print("")
                 self.requestStore.token = user_obj.token
                 self.userStore.user.id = user_obj.id
                 self.userStore.user.token = user_obj.token
@@ -257,6 +261,8 @@ class LoginVC: TemplateVC {
                 }
                 self.requestStore.token = user_obj.token!
             case let .failure(error):
+                
+                
                 self.templateAlert(alertTitle: "\(error)", alertMessage: "Did you register? \n ¯\\_(ツ)_/¯ ")
                 }
             }
@@ -349,18 +355,10 @@ class LoginVC: TemplateVC {
             dashboardVC.appleHealthDataFetcher = self.appleHealthDataFetcher
             dashboardVC.healthDataStore = self.healthDataStore
             
-            dashboardVC.dashboardTableObject = self.userStore.arryDashboardTableObjects![0]
-            
-            guard let _ = self.userStore.arryDataSourceObjects else {
-                print("** should NOT fire arryDataSourceObjects ***")
-                userStore.arryDataSourceObjects = [DataSourceObject]()
-                return
+            if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
+                dashboardVC.dashboardTableObject = unwp_arryDashTableObj[0]
             }
-            guard let _ = self.userStore.arryDashboardTableObjects else {
-                    print("** should NOT fire arryDashboardTableObjects ***")
-                userStore.arryDashboardTableObjects = [DashboardTableObject]()
-                return
-            }
+            self.token = "token"// reset login
         }
     }
     

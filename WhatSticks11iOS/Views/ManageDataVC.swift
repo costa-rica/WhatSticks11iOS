@@ -13,14 +13,11 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
     var requestStore: RequestStore!
     var appleHealthDataFetcher:AppleHealthDataFetcher!
     var healthDataStore: HealthDataStore!
-    var btnGoToManageDataVC=UIButton()
-    var btnGoToLoginVC=UIButton()
-    
+//    var btnGoToManageDataVC=UIButton()
+//    var btnGoToLoginVC=UIButton()
     var tblDataSources=UITableView()
-    
-//    var spinnerView: UIView?
-//    var alertMessageCustom:String?
     var segueSource:String?
+    var btnGoToManageUser=UIButton()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +30,7 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
         tblDataSources.rowHeight = UITableView.automaticDimension
         tblDataSources.estimatedRowHeight = 100
         setup_tbl()
+        setup_btnGoToManageUser()
         
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
@@ -43,15 +41,13 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
             print("\(obj.name!): \(obj.recordCount!)")
         }
         DispatchQueue.main.async{
-//            self.tblDataSources.reloadData()
             // Assuming you want to reload all rows
             let section = 0 // Modify this if you have multiple sections
             let numberOfRows = self.tblDataSources.numberOfRows(inSection: section)
             let indexPaths = (0..<numberOfRows).map { IndexPath(row: $0, section: section) }
-
             self.tblDataSources.reloadRows(at: indexPaths, with: .automatic)
         }
-    }
+    }// This tries to reload when data was added via AppleHealthDataVC
     func setup_tbl(){
         tblDataSources.accessibilityIdentifier = "tblDataSources"
         tblDataSources.translatesAutoresizingMaskIntoConstraints=false
@@ -65,9 +61,10 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
 
         self.userStore.callSendDataSourceObjects { responseResult in
             switch responseResult{
-            case let .success(jsonDataSourceObj):
-                self.userStore.arryDataSourceObjects = jsonDataSourceObj
-                self.userStore.writeDataSourceJson()
+            case let .success(arryDataSourceObjects):
+                self.userStore.arryDataSourceObjects = arryDataSourceObjects
+//                self.userStore.writeDataSourceJson()
+                self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
                 self.refreshValuesInTable()
             case let .failure(error):
                 sender.endRefreshing()
@@ -81,12 +78,32 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
             let section = 0 // Modify this if you have multiple sections
             let numberOfRows = self.tblDataSources.numberOfRows(inSection: section)
             let indexPaths = (0..<numberOfRows).map { IndexPath(row: $0, section: section) }
-
             self.tblDataSources.reloadRows(at: indexPaths, with: .automatic)
             self.tblDataSources.refreshControl?.endRefreshing()
-            
         }
     }
+    
+    
+    func setup_btnGoToManageUser(){
+        view.addSubview(btnGoToManageUser)
+        btnGoToManageUser.translatesAutoresizingMaskIntoConstraints=false
+        btnGoToManageUser.accessibilityIdentifier="btnGoToManageUser"
+        btnGoToManageUser.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnGoToManageUser.addTarget(self, action: #selector(touchUpInside_btnGoToManageUser(_:)), for: .touchUpInside)
+        // vwFooter button Placement
+        btnGoToManageUser.topAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
+        btnGoToManageUser.trailingAnchor.constraint(equalTo: vwFooter.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+        btnGoToManageUser.backgroundColor = .systemBlue
+        btnGoToManageUser.layer.cornerRadius = 10
+        btnGoToManageUser.setTitle(" Manage User ", for: .normal)
+    }
+    @objc func touchUpInside_btnGoToManageUser(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
+            sender.transform = .identity
+        }, completion: nil)
+        performSegue(withIdentifier: "goToManageUserVC", sender: self)
+    }
+    
     
 
     func segueToManageDataSourceDetailsVC(source:String){
@@ -105,6 +122,12 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
             manageAppleHealthVC.requestStore = self.requestStore
             manageAppleHealthVC.appleHealthDataFetcher = self.appleHealthDataFetcher
             manageAppleHealthVC.healthDataStore = self.healthDataStore
+        }
+        else if (segue.identifier == "goToManageUserVC"){
+            let manageUserVC = segue.destination as! ManageUserVC
+            manageUserVC.userStore = self.userStore
+            manageUserVC.requestStore = self.requestStore
+            manageUserVC.healthDataStore = self.healthDataStore
         }
     }
     

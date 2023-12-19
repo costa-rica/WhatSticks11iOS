@@ -164,7 +164,7 @@ class ManageAppleHealthVC: TemplateVC {
     }
     // This function could be called when you want to show the delete confirmation
     @objc func alertDeleteConfirmation() {
-        let alertController = UIAlertController(title: "Are you sure you want to delete?", message: "This will only delete Apple Health Data from What Sticks Databases. You Apple Health Data will be unaffected.", preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Are you sure you want to delete?", message: "This will only delete Apple Health Data from What Sticks Databases. Your Apple Health Data remain be unaffected.", preferredStyle: .alert)
         // 'Yes' action
         let yesAction = UIAlertAction(title: "Yes", style: .destructive) { [weak self] _ in
             // Handle the 'Yes' action here
@@ -196,7 +196,8 @@ class ManageAppleHealthVC: TemplateVC {
                         if obj.name == "Apple Health Data"{
                             print("** unwp_count_of_entries: \(unwp_count_of_user_apple_health_records)")
                             obj.recordCount = unwp_count_of_user_apple_health_records
-                            self.userStore.writeDataSourceJson()
+//                            self.userStore.writeDataSourceJson()
+                            self.userStore.writeObjectToJsonFile(object: self.userStore.arryDataSourceObjects, filename: "arryDataSourceObjects.json")
                         }
                     }
                 }
@@ -218,7 +219,8 @@ class ManageAppleHealthVC: TemplateVC {
                     for obj in unwp_arryDashHealthDataObj{
                         if obj.name == "Apple Health Data"{
                             obj.recordCount = "0"
-                            self.userStore.writeDataSourceJson()
+//                            self.userStore.writeDataSourceJson()
+                            self.userStore.writeObjectToJsonFile(object: self.userStore.arryDataSourceObjects, filename: "arryDataSourceObjects.json")
                         }
                     }
                 }

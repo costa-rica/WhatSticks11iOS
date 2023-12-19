@@ -25,6 +25,7 @@ enum EndPoint: String {
     case user = "user"
     case register = "register"
     case login = "login"
+    case delete_user = "delete_user"
     case send_data_source_objects = "send_data_source_objects"
     case send_dashboard_table_objects = "send_dashboard_table_objects"
     case receive_apple_health_data = "receive_apple_health_data"

@@ -29,6 +29,7 @@
 		014205B72B2382D200315904 /* ManageAppleHealthVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205B62B2382D200315904 /* ManageAppleHealthVC.swift */; };
 		014205B92B23837900315904 /* HealthDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205B82B23837900315904 /* HealthDataStore.swift */; };
 		014205BB2B23841C00315904 /* AppleHealthDataUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */; };
+		016988A82B300D74009EA492 /* ManageUserVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016988A72B300D74009EA492 /* ManageUserVC.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +77,7 @@
 		014205B82B23837900315904 /* HealthDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDataStore.swift; sourceTree = "<group>"; };
 		014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthDataUtils.swift; sourceTree = "<group>"; };
 		014205BC2B24459800315904 /* WhatSticks11iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhatSticks11iOS.entitlements; sourceTree = "<group>"; };
+		016988A72B300D74009EA492 /* ManageUserVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageUserVC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -187,6 +189,7 @@
 				014205B22B2334D700315904 /* DashboardVC.swift */,
 				014205B42B23772600315904 /* ManageDataVC.swift */,
 				014205B62B2382D200315904 /* ManageAppleHealthVC.swift */,
+				016988A72B300D74009EA492 /* ManageUserVC.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -337,6 +340,7 @@
 				014205A82B2113C500315904 /* RequestStore.swift in Sources */,
 				014205A02B21117200315904 /* User.swift in Sources */,
 				014205732B21113C00315904 /* LoginVC.swift in Sources */,
+				016988A82B300D74009EA492 /* ManageUserVC.swift in Sources */,
 				014205B12B221C0200315904 /* RegisterVC.swift in Sources */,
 				014205B52B23772600315904 /* ManageDataVC.swift in Sources */,
 				014205BB2B23841C00315904 /* AppleHealthDataUtils.swift in Sources */,
