@@ -47,10 +47,9 @@ class ManageAppleHealthVC: TemplateVC {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Manage Apple Health"
-        self.setScreenNameFontSize(size: 20)
+//        self.setScreenNameFontSize(size: 20)
         print("- in ManageAppleHealthVC viewDidLoad -")
 
         setupAllHistorySwitch()
@@ -58,6 +57,7 @@ class ManageAppleHealthVC: TemplateVC {
         setupDatePicker()
         setup_btnGetData()
         setup_btnDeleteData()
+        self.setScreenNameFontSize()
     }
     private func setupAllHistorySwitch() {
         

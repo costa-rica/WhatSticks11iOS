@@ -23,7 +23,7 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Manage Data"
-        self.setScreenNameFontSize(size: 30)
+//        self.setScreenNameFontSize(size: 30)
         tblDataSources.delegate = self
         tblDataSources.dataSource = self
         tblDataSources.register(ManageDataTableCell.self, forCellReuseIdentifier: "ManageDataTableCell")
@@ -35,6 +35,7 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
         tblDataSources.refreshControl = refreshControl
+        self.setScreenNameFontSize()
     }
     override func viewDidAppear(_ animated: Bool) {
         for obj in userStore.arryDataSourceObjects!{

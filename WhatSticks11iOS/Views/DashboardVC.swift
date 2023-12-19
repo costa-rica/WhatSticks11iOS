@@ -22,22 +22,16 @@ class DashboardVC: TemplateVC{
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Dashboard"
         print("- in DashboardVC viewDidLoad -")
         setup_btnGoToManageDataVC()
-//        if let _ = self.dashboardTableObject {
-//            dashboardTableObjectExists()
-//        }
-//        else{
-//            setup_btnRefreshDashboard()
-//        }
+
     }
     override func viewWillAppear(_ animated: Bool) {
-        print("*** DashboardVC viewWillAppear ")
-//        if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
-//            dashboardVC.dashboardTableObject = unwp_arryDashTableObj[0]
-//        }
+
         userStore.checkDashboardJson { result in
             print("* checking: userStore.checkDashboardJson")
             DispatchQueue.main.async{

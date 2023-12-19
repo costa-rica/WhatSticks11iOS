@@ -20,12 +20,16 @@ class TemplateVC: UIViewController {
     var spinnerView: UIView?
     var messageLabel = UILabel()
     var imgLogoTrailingAnchor: NSLayoutConstraint!
+    var lblScreenNameTopAnchor: NSLayoutConstraint!
+    var lblUserNameBottomAnchor: NSLayoutConstraint!
     
     var isInitialViewController: Bool = false
      
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
+        
+
     }
     private func setupViews() {
         // Setup vwTopSafeBar
@@ -55,12 +59,16 @@ class TemplateVC: UIViewController {
         lblUsername.translatesAutoresizingMaskIntoConstraints=false
         vwTopBar.addSubview(lblScreenName)
         vwTopBar.addSubview(lblUsername)
-        lblScreenName.topAnchor.constraint(equalTo: vwTopBar.topAnchor,constant: heightFromPct(percent: 1)).isActive=true
-        lblScreenName.centerXAnchor.constraint(equalTo: vwTopBar.centerXAnchor).isActive=true
-        lblUsername.bottomAnchor.constraint(equalTo: vwTopBar.bottomAnchor,constant:heightFromPct(percent: -1)).isActive=true
+        lblScreenNameTopAnchor = lblScreenName.topAnchor.constraint(equalTo: vwTopBar.topAnchor,constant: heightFromPct(percent: 1))
+        lblScreenNameTopAnchor.isActive=true
+        lblScreenName.centerXAnchor.constraint(equalTo: vwTopBar.centerXAnchor, constant: widthFromPct(percent: 1)).isActive=true
+        
+        lblUserNameBottomAnchor = lblUsername.bottomAnchor.constraint(equalTo: vwTopBar.bottomAnchor,constant:heightFromPct(percent: -1))
+        lblUserNameBottomAnchor.isActive=true
         lblUsername.centerXAnchor.constraint(equalTo: vwTopBar.centerXAnchor).isActive=true
+        
         setScreenNameFontSize()
-        lblUsername.font = UIFont(name: "ArialRoundedMTBold", size: 18)
+//        lblUsername.font = UIFont(name: "ArialRoundedMTBold", size: 18)
         //setup imgVwLogo
         imgVwLogo.translatesAutoresizingMaskIntoConstraints = false
         vwTopBar.addSubview(imgVwLogo)
@@ -88,9 +96,23 @@ class TemplateVC: UIViewController {
         imgVwLogo.trailingAnchor.constraint(equalTo: vwTopBar.trailingAnchor,constant: widthFromPct(percent: -bodySidePaddingPercentage)).isActive=true
     }
     
-    func setScreenNameFontSize(size: CGFloat? = nil) {
-        let fontSize = size ?? 33 // Default to 33 if no size is provided
-        lblScreenName.font = UIFont(name: "ArialRoundedMTBold", size: fontSize)
+    func setScreenNameFontSize() {
+        lblScreenName.font = UIFont(name: "ArialRoundedMTBold", size: 30)
+        lblUsername.font = UIFont(name: "ArialRoundedMTBold", size: 18)
+        lblUsername.textColor = .gray
+        if let unwp_lblScreenNameText = lblScreenName.text{
+            if unwp_lblScreenNameText.count > 12 {
+                lblScreenName.numberOfLines = 0
+                lblScreenName.widthAnchor.constraint(equalToConstant: widthFromPct(percent: 60)).isActive=true
+                lblScreenName.textAlignment = .center
+                let lblScreenNameFontSize = -1 * unwp_lblScreenNameText.count + 40// Continuous function to size lblScreenName
+                lblScreenName.font = UIFont(name: "ArialRoundedMTBold", size: CGFloat(Int(lblScreenNameFontSize)))
+                lblScreenNameTopAnchor.isActive=false
+                lblUserNameBottomAnchor.isActive=false
+                lblScreenName.topAnchor.constraint(equalTo: vwTopBar.topAnchor).isActive=true
+                lblUsername.bottomAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: -0.25)).isActive=true
+            }
+        }
     }
     @objc func touchDown(_ sender: UIButton) {
         UIView.animate(withDuration: 0.1, delay: 0.0, options: [.curveEaseOut], animations: {
