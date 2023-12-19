@@ -58,12 +58,6 @@ class ManageAppleHealthVC: TemplateVC {
         setupDatePicker()
         setup_btnGetData()
         setup_btnDeleteData()
-        //default get all data
-//        datePicker.isHidden = true
-//        lblDatePicker.isHidden = true
-//        swtchAllHistory.isOn=true
-        // ok tapped
-
     }
     private func setupAllHistorySwitch() {
         
@@ -110,7 +104,7 @@ class ManageAppleHealthVC: TemplateVC {
         btnGetData.trailingAnchor.constraint(equalTo: vwFooter.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
         btnGetData.backgroundColor = .systemBlue
         btnGetData.layer.cornerRadius = 10
-        btnGetData.setTitle(" Get Data ", for: .normal)
+        btnGetData.setTitle(" Add Data ", for: .normal)
     }
     private func setup_btnDeleteData() {
         btnDeleteData.translatesAutoresizingMaskIntoConstraints = false
@@ -224,6 +218,19 @@ class ManageAppleHealthVC: TemplateVC {
                         }
                     }
                 }
+                self.userStore.deleteJsonFile(filename: "arryDashboardTableObjects.json")
+                if let _ = self.userStore.arryDashboardTableObjects{
+                    self.userStore.arryDashboardTableObjects!.removeAll { $0.sourceDataOfDepVar=="Apple Health Data" }
+
+                }
+                if var unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
+                    for obj in unwp_arryDashTableObj{
+                        print("self.userStore.arryDashboardTableObjects: \(obj.name)")
+                    }
+                    print("self.userStore.arryDashboardTableObjects.count: \(unwp_arryDashTableObj.count)")
+                }
+
+                
                 self.removeSpinner()
                 self.templateAlert(alertMessage: "Delete successful!")
             case .failure(_):

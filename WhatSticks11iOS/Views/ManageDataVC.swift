@@ -240,7 +240,7 @@ class ManageDataTableCell: UITableViewCell{
         stckVwLabels.addArrangedSubview(lblRecordCount)
         
         // Button configuration
-        btnRefresh.setTitle(" Refresh ", for: .normal)
+        btnRefresh.setTitle(" Add/Delete ", for: .normal)
         btnRefresh.titleLabel?.font = UIFont(name: "ArialRoundedMTBold", size: 12)
         btnRefresh.backgroundColor = .systemOrange
         btnRefresh.layer.cornerRadius = 10

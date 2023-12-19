@@ -111,13 +111,3 @@ class ManageUserVC: TemplateVC{
 
 }
 
-extension UIView {
-    func printSubviews(indentation: Int = 0) {
-        let indent = String(repeating: " ", count: indentation)
-        print("\(indent)\(self)")
-
-        for subview in self.subviews {
-            subview.printSubviews(indentation: indentation + 2)
-        }
-    }
-}

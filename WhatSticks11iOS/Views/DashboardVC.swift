@@ -18,44 +18,70 @@ class DashboardVC: TemplateVC{
     var dashboardTableObject: DashboardTableObject?
     var btnCheckDashTableObj = UIButton()
     var lblDashboardTitle=UILabel()
-    
     var btnRefreshDashboard:UIButton!
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Dashboard"
         print("- in DashboardVC viewDidLoad -")
-        
         setup_btnGoToManageDataVC()
-        if let _ = self.dashboardTableObject {
-            dashboardTableObjectExists()
-
+//        if let _ = self.dashboardTableObject {
+//            dashboardTableObjectExists()
+//        }
+//        else{
+//            setup_btnRefreshDashboard()
+//        }
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        print("*** DashboardVC viewWillAppear ")
+//        if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
+//            dashboardVC.dashboardTableObject = unwp_arryDashTableObj[0]
+//        }
+        userStore.checkDashboardJson { result in
+            print("* checking: userStore.checkDashboardJson")
+            DispatchQueue.main.async{
+                switch result{
+                case .success(_):
+                    
+                    if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
+                        print("- found self.userStore.arryDashboardTableObjects")
+                        self.dashboardTableObject = unwp_arryDashTableObj[0]
+                        self.dashboardTableObjectExists()
+                    }
+                    else{
+                        print("- did not find self.userStore.arryDashboardTableObjects")
+                        self.templateAlert(alertTitle: "Error", alertMessage: "Something wrong with viewWillAppear DashboardVC")
+                        self.setup_btnRefreshDashboard()
+                    }
+                case let .failure(error):
+                    self.setup_btnRefreshDashboard()
+                    if let _ = self.tblDashboard{
+                        self.tblDashboard.removeFromSuperview()
+                        self.lblDashboardTitle.removeFromSuperview()
+                    }
+                    print("No arryDashboardTableObjects.json file found, error: \(error)")
+                }
+            }
         }
-        else{
-            setup_btnRefreshDashboard()
-        }
-      
-
     }
 
     func dashboardTableObjectExists(){
-        setup_lblDashboardTitle()
-        tblDashboard = UITableView()
-        setup_tbl()
-        
-        tblDashboard.delegate = self
-        tblDashboard.dataSource = self
-        tblDashboard.register(DashboardTableCell.self, forCellReuseIdentifier: "DashboardTableCell")
-        tblDashboard.rowHeight = UITableView.automaticDimension
-        tblDashboard.estimatedRowHeight = 100
-        
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
-        tblDashboard.refreshControl = refreshControl
-        if let _ = btnRefreshDashboard{
-            btnRefreshDashboard.removeFromSuperview()
+        DispatchQueue.main.async {
+            self.setup_lblDashboardTitle()
+            self.tblDashboard = UITableView()
+            self.setup_tbl()
+            self.tblDashboard.delegate = self
+            self.tblDashboard.dataSource = self
+            self.tblDashboard.register(DashboardTableCell.self, forCellReuseIdentifier: "DashboardTableCell")
+            self.tblDashboard.rowHeight = UITableView.automaticDimension
+            self.tblDashboard.estimatedRowHeight = 100
+            let refreshControl = UIRefreshControl()
+            refreshControl.addTarget(self, action: #selector(self.refreshData(_:)), for: .valueChanged)
+            self.tblDashboard.refreshControl = refreshControl
+            if let _ = self.btnRefreshDashboard{
+                self.btnRefreshDashboard.removeFromSuperview()
+            }
         }
     }
     func setup_lblDashboardTitle(){
@@ -97,7 +123,6 @@ class DashboardVC: TemplateVC{
         performSegue(withIdentifier: "goToManageDataVC", sender: self)
 
     }
-
     func setup_btnRefreshDashboard(){
         btnRefreshDashboard = UIButton()
         view.addSubview(btnRefreshDashboard)
@@ -106,7 +131,8 @@ class DashboardVC: TemplateVC{
         btnRefreshDashboard.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
         btnRefreshDashboard.addTarget(self, action: #selector(touchUpInside_btnRefreshDashboard(_:)), for: .touchUpInside)
         // vwFooter button Placement
-        btnRefreshDashboard.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -2)).isActive=true
+//        btnRefreshDashboard.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -15)).isActive=true
+        btnRefreshDashboard.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive=true
         btnRefreshDashboard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
         btnRefreshDashboard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
         btnRefreshDashboard.backgroundColor = .systemGray
@@ -119,13 +145,12 @@ class DashboardVC: TemplateVC{
         }, completion: nil)
         
         self.userStore.callSendDashboardTableObjects { responseResult in
-            DispatchQueue.main.async {
                 switch responseResult {
                 case let .success(arryDashboardTableObjects):
-                    print("- table update")
+                    print("- DashboardVC userStore.callSendDashboardTableObjects received SUCCESSFUL response")
                     self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
                     for obj in arryDashboardTableObjects{
-                        if obj.name == self.lblDashboardTitle.text{
+                        if obj.name == "Sleep Time"{
                             self.dashboardTableObject = obj
                             self.dashboardTableObjectExists()
                         }
@@ -135,17 +160,14 @@ class DashboardVC: TemplateVC{
                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         if case UserStoreError.fileNotFound = error {
                             print("* file not found error *")
-                            self.templateAlert(alertTitle: "Error", alertMessage: "Dashboard file not found")
+                            self.templateAlert(alertTitle: "", alertMessage: "No data exists. Go to Manage Data to add data for your dashboard.")
                         } else {
-                            
                             self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
                         }
                     }
                 }
-            }
         }
     }
-    
     
     @objc private func refreshData(_ sender: UIRefreshControl) {
         self.userStore.callSendDashboardTableObjects { responseResult in
@@ -181,7 +203,6 @@ class DashboardVC: TemplateVC{
             }
         }
     }
-
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "goToManageDataVC"){

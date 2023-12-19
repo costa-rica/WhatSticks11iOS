@@ -267,112 +267,61 @@ func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
     }
 }
     func deleteJsonFile(filename:String){
-        let jsonFileURL = self.documentsURL.appendingPathComponent(filename)
-        do {
-            try fileManager.removeItem(at: jsonFileURL)
-        } catch {
-            print("No no \(filename) file exists")
-        }
-    }// "arryDashboardTableObjects.json", "arryDataSourceObjects.json", "user.json"
+    let jsonFileURL = self.documentsURL.appendingPathComponent(filename)
+    do {
+        try fileManager.removeItem(at: jsonFileURL)
+    } catch {
+        print("No no \(filename) file exists")
+    }
+}// "arryDashboardTableObjects.json", "arryDataSourceObjects.json", "user.json"
     
-//    func writeDataSourceJson(){
-//        var jsonData:Data!
-//        do {
-//            let jsonEncoder = JSONEncoder()
-//            jsonData = try jsonEncoder.encode(arryDataSourceObjects)
-//        } catch {print("failed to encode json")}
-//        
-//        let jsonFileURL = self.documentsURL.appendingPathComponent("arryDataSourceObjects.json")
-//        do {
-//            try jsonData.write(to:jsonFileURL)
-//            print("successfully wrote arryDataSourceObjects.json")
-//        } catch {
-//            print("Error: \(error)")
-//        }
-//    }
+
     func checkDataSourceJson(completion: (Result<[DataSourceObject],Error>) -> Void){
-        
-        let userJsonFile = documentsURL.appendingPathComponent("arryDataSourceObjects.json")
-        
-        guard fileManager.fileExists(atPath: userJsonFile.path) else {
-            completion(.failure(UserStoreError.failedDecode))
-            return
-        }
+    
+    let userJsonFile = documentsURL.appendingPathComponent("arryDataSourceObjects.json")
+    
+    guard fileManager.fileExists(atPath: userJsonFile.path) else {
+        completion(.failure(UserStoreError.failedDecode))
+        return
+    }
 //        var user:User?
-        do{
-            let jsonData = try Data(contentsOf: userJsonFile)
-            let decoder = JSONDecoder()
-            self.arryDataSourceObjects = try decoder.decode([DataSourceObject].self, from:jsonData)
-        } catch {
-            print("- failed to make userDict");
-            completion(.failure(UserStoreError.failedDecode))
-        }
+    do{
+        let jsonData = try Data(contentsOf: userJsonFile)
+        let decoder = JSONDecoder()
+        self.arryDataSourceObjects = try decoder.decode([DataSourceObject].self, from:jsonData)
+    } catch {
+        print("- failed to make userDict");
+        completion(.failure(UserStoreError.failedDecode))
+    }
 //        guard let unwrapped_user = user else {
 //            print("unwrapped_userDict failed")
 //            completion(.failure(UserStoreError.failedDecode))
 //            return
 //        }
-        completion(.success(self.arryDataSourceObjects ?? [DataSourceObject]()))
+    completion(.success(self.arryDataSourceObjects ?? [DataSourceObject]()))
 
-    }
-//    func writeDashboardJson(){
-//        var jsonData:Data!
-//        do {
-//            let jsonEncoder = JSONEncoder()
-//            jsonData = try jsonEncoder.encode(arryDashboardTableObjects)
-//        } catch {print("failed to encode json")}
-//        
-//        let jsonFileURL = self.documentsURL.appendingPathComponent("arryDashboardTableObjects.json")
-//        do {
-//            try jsonData.write(to:jsonFileURL)
-//            print("successfully wrote arryDashboardTableObjects.json")
-//        } catch {
-//            print("Error: \(error)")
-//        }
-//    }
+}
+
     func checkDashboardJson(completion: (Result<[DashboardTableObject],Error>) -> Void){
-        
-        let userJsonFile = documentsURL.appendingPathComponent("arryDashboardTableObjects.json")
-        guard fileManager.fileExists(atPath: userJsonFile.path) else {
-            completion(.failure(UserStoreError.failedDecode))
-            return
-        }
-        do{
-            let jsonData = try Data(contentsOf: userJsonFile)
-            let decoder = JSONDecoder()
-            self.arryDashboardTableObjects = try decoder.decode([DashboardTableObject].self, from:jsonData)
-        } catch {
-            print("- failed to make userDict");
-            completion(.failure(UserStoreError.failedDecode))
-        }
-
-        completion(.success(self.arryDashboardTableObjects ?? [DashboardTableObject]()))
-
-    }
-//    func deleteDashboardJsonFile(){
-//        let jsonFileURL = self.documentsURL.appendingPathComponent("arryDashboardTableObjects.json")
-//        do {
-//            try fileManager.removeItem(at: jsonFileURL)
-//        } catch {
-//            print("No no user file")
-//        }
-//    }
     
-//    func writeUserJson(){
-//        var jsonData:Data!
-//
-//        do {
-//            let jsonEncoder = JSONEncoder()
-//            jsonData = try jsonEncoder.encode(user)
-//        } catch {print("failed to encode json")}
-//        
-//        let jsonFileURL = self.documentsURL.appendingPathComponent("user.json")
-//        do {
-//            try jsonData.write(to:jsonFileURL)
-//        } catch {
-//            print("Error: \(error)")
-//        }
-//    }
+    let userJsonFile = documentsURL.appendingPathComponent("arryDashboardTableObjects.json")
+    guard fileManager.fileExists(atPath: userJsonFile.path) else {
+        completion(.failure(UserStoreError.failedDecode))
+        return
+    }
+    do{
+        let jsonData = try Data(contentsOf: userJsonFile)
+        let decoder = JSONDecoder()
+        self.arryDashboardTableObjects = try decoder.decode([DashboardTableObject].self, from:jsonData)
+    } catch {
+        print("- failed to make userDict");
+        completion(.failure(UserStoreError.failedDecode))
+    }
+
+    completion(.success(self.arryDashboardTableObjects ?? [DashboardTableObject]()))
+
+}
+
     func checkUserJson(completion: (Result<User,Error>) -> Void){
         
         let userJsonFile = documentsURL.appendingPathComponent("user.json")
@@ -398,13 +347,6 @@ func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
         completion(.success(unwrapped_user))
 
     }
-//    func deleteUserJsonFile(){
-//        let jsonFileURL = self.documentsURL.appendingPathComponent("user.json")
-//        do {
-//            try fileManager.removeItem(at: jsonFileURL)
-//        } catch {
-//            print("No no user file")
-//        }
-//    }
+
     
 }

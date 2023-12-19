@@ -355,9 +355,9 @@ class LoginVC: TemplateVC {
             dashboardVC.appleHealthDataFetcher = self.appleHealthDataFetcher
             dashboardVC.healthDataStore = self.healthDataStore
             
-            if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
-                dashboardVC.dashboardTableObject = unwp_arryDashTableObj[0]
-            }
+//            if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
+//                dashboardVC.dashboardTableObject = unwp_arryDashTableObj[0]
+//            }
             self.token = "token"// reset login
         }
     }

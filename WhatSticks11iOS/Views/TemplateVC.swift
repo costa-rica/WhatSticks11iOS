@@ -132,9 +132,6 @@ class TemplateVC: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
             self.messageLabel.isHidden = false
         }
-        print("---- TemplateVC elements ----")
-        self.view.printSubviews()
-        print("---- TemplateVC END elements ----")
     }
     func removeSpinner() {
         spinnerView?.removeFromSuperview()

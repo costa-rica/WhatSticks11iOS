@@ -61,14 +61,3 @@ func formatWithCommas(number: Int) -> String {
     formatter.numberStyle = .decimal
     return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
 }
-func showSpinnerSolo(spinnerView:UIView) -> UIView {
-    spinnerView.backgroundColor = UIColor(white: 0, alpha: 0.5)
-    let activityIndicator = UIActivityIndicatorView(style: .large)
-    activityIndicator.transform = CGAffineTransform(scaleX: 2, y: 2)// makes spinner bigger
-    activityIndicator.center = spinnerView.center
-    activityIndicator.startAnimating()
-    spinnerView.addSubview(activityIndicator)
-    spinnerView.accessibilityIdentifier = "spinnerView"
-    activityIndicator.accessibilityIdentifier = "activityIndicator"
-    return spinnerView
-}
