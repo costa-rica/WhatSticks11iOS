@@ -223,13 +223,6 @@ class ManageAppleHealthVC: TemplateVC {
                     self.userStore.arryDashboardTableObjects!.removeAll { $0.sourceDataOfDepVar=="Apple Health Data" }
 
                 }
-                if var unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
-                    for obj in unwp_arryDashTableObj{
-                        print("self.userStore.arryDashboardTableObjects: \(obj.name)")
-                    }
-                    print("self.userStore.arryDashboardTableObjects.count: \(unwp_arryDashTableObj.count)")
-                }
-
                 
                 self.removeSpinner()
                 self.templateAlert(alertMessage: "Delete successful!")
