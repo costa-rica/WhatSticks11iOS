@@ -129,6 +129,7 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
             manageUserVC.userStore = self.userStore
             manageUserVC.requestStore = self.requestStore
             manageUserVC.healthDataStore = self.healthDataStore
+            manageUserVC.appleHealthDataFetcher = self.appleHealthDataFetcher
         }
     }
     

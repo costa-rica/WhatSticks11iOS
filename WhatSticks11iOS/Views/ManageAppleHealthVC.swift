@@ -23,15 +23,22 @@ class ManageAppleHealthVC: TemplateVC {
     let lblDatePicker = UILabel()
     var arryStepsDict = [[String:String]](){
         didSet{
+            print("- in arryStepsDict didSet")
             actionGetHeartRateData()
+        }
+    }
+    var arryHeartRateDict = [[String:String]](){
+        didSet{
+            print("- in arryHeartRateDict didSet")
+            actionGetSleepData()
         }
     }
     var arrySleepDict = [[String:String]](){
         didSet{
-            
+            print("- in arrySleepDict didSet")
             let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
             if all_data_count > 0{
-                print("sending \(String(all_data_count)) records")
+                print("sending (arrySleepDict + arryStepsDict + arryHeartRateDict): \(String(all_data_count)) records")
                 self.sendAppleHealthData(arryAppleHealthData: arrySleepDict + arryStepsDict + arryHeartRateDict)
             }
             else{
@@ -39,12 +46,7 @@ class ManageAppleHealthVC: TemplateVC {
             }
         }
     }
-    var arryHeartRateDict = [[String:String]](){
-        didSet{
-            print("get haert rate")
-            actionGetSleepData()
-        }
-    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
@@ -124,37 +126,63 @@ class ManageAppleHealthVC: TemplateVC {
     }
     @objc func actionGetData() {
         self.showSpinner()
-        if swtchAllHistory.isOn {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount) { arryStepsDict in
-                self.arryStepsDict = arryStepsDict
-            }
-        } else {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.datePicker.date) { arryStepsDict in
-                self.arryStepsDict = arryStepsDict
+//        if swtchAllHistory.isOn {
+//            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount) { arryStepsDict in
+//                self.arryStepsDict = arryStepsDict
+//            }
+//        } else {
+            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.datePicker.date) { fetcherResult in
+                switch fetcherResult{
+                case let .success(arryStepsDict):
+                    print("succesfully collected - arryStepsDict - from healthFetcher class")
+                    self.arryStepsDict = arryStepsDict
+                    
+                case let .failure(error):
+                    self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without steps data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
+                    print("There was an error getting steps: \(error)")
+                    self.removeSpinner()
+                    
+                }
+                
             }
         }
-    }
+//    }
     func actionGetSleepData(){
-        if swtchAllHistory.isOn {
-            self.appleHealthDataFetcher.fetchSleepData(categoryTypeIdentifier:.sleepAnalysis) { arrySleepDict in
-                self.arrySleepDict = arrySleepDict
+//        if swtchAllHistory.isOn {
+            self.appleHealthDataFetcher.fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:.sleepAnalysis) { fetcherResult in
+                switch fetcherResult{
+                case let .success(arrySleepDict):
+                    print("succesfully collected - arrySleepDict - from healthFetcher class")
+                    self.arrySleepDict = arrySleepDict
+                    
+                case let .failure(error):
+                    self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without sleep data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
+                    print("There was an error getting sleep: \(error)")
+                    self.removeSpinner()
+                
             }
-        } else {
-            self.appleHealthDataFetcher.fetchSleepData(categoryTypeIdentifier: .sleepAnalysis, startDate: self.datePicker.date) { arrySleepDict in
-                self.arrySleepDict = arrySleepDict
-            }
+//        } else {
+//            self.appleHealthDataFetcher.fetchSleepData(categoryTypeIdentifier: .sleepAnalysis, startDate: self.datePicker.date) { arrySleepDict in
+//                self.arrySleepDict = arrySleepDict
+//            }
         }
     }
     func actionGetHeartRateData(){
-        if swtchAllHistory.isOn {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate) { arryHeartRateDict in
-                self.arryHeartRateDict = arryHeartRateDict
+//        if swtchAllHistory.isOn {
+            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate) { fetcherResult in
+                switch fetcherResult{
+                case let .success(arryHeartRateDict):
+                    print("succesfully collected - arryHeartRateDict - from healthFetcher class")
+                    self.arryHeartRateDict = arryHeartRateDict
+                case let .failure(error):
+                    print("There was an error getting heart rate: \(error)")
+                    self.removeSpinner()
             }
-        } else {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.datePicker.date) { arryHeartRateDict in
-                self.arryHeartRateDict = arryHeartRateDict
+//        } else {
+//            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.datePicker.date) { arryHeartRateDict in
+//                self.arryHeartRateDict = arryHeartRateDict
             }
-        }
+//        }
     }
     // This function could be called when you want to show the delete confirmation
     @objc func alertDeleteConfirmation() {

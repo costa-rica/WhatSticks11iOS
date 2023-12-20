@@ -12,10 +12,13 @@ class ManageUserVC: TemplateVC{
     var userStore: UserStore!
     var requestStore: RequestStore!
     var healthDataStore:HealthDataStore!
+    var appleHealthDataFetcher: AppleHealthDataFetcher!
     var btnDeleteUser=UIButton()
     var swtchEmailNotifications = UISwitch()
     var lblEmailNotifications = UILabel()
-    var spinnerViewManageUserVC:UIView!
+//    var spinnerViewManageUserVC:UIView!
+    var btnManageHealthSettings = UIButton()
+    
  
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,6 +27,7 @@ class ManageUserVC: TemplateVC{
         print("- in ManageUserVC viewDidLoad -")
         setupEmailNotifications()
         setup_btnDeleteUser()
+        setup_btnManageHealthSettings()
     }
     private func setupEmailNotifications() {
         swtchEmailNotifications.translatesAutoresizingMaskIntoConstraints = false
@@ -56,6 +60,47 @@ class ManageUserVC: TemplateVC{
         }, completion: nil)
         print("delete user api call")
         alertDeleteConfirmation()
+    }
+    func setup_btnManageHealthSettings(){
+        view.addSubview(btnManageHealthSettings)
+        btnManageHealthSettings.translatesAutoresizingMaskIntoConstraints=false
+        btnManageHealthSettings.accessibilityIdentifier="btnManageHealthSettings"
+        btnManageHealthSettings.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnManageHealthSettings.addTarget(self, action: #selector(touchUpInside_btnManageHealthSettings(_:)), for: .touchUpInside)
+        btnManageHealthSettings.bottomAnchor.constraint(equalTo: btnDeleteUser.topAnchor, constant: heightFromPct(percent: -10)).isActive=true
+        btnManageHealthSettings.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+        btnManageHealthSettings.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+        btnManageHealthSettings.backgroundColor = .systemBlue
+        btnManageHealthSettings.layer.cornerRadius = 10
+        btnManageHealthSettings.setTitle(" Go to Apple Health Data Settings ", for: .normal)
+    }
+    @objc func touchUpInside_btnManageHealthSettings(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
+            sender.transform = .identity
+        }, completion: nil)
+        print(" btnManageHealthSettings ")
+        self.appleHealthDataFetcher.authorizeHealthKit()
+//        guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+//            return
+//        }
+//        // ARticle that might be helpful: https://medium.com/p/20871139d72f
+////        guard let settingsHealthUrl = URL(string: "x-apple-health://") else {
+////            return
+////        }
+//        guard let settingsHealthUrl = URL(string: "prefs:root=HEALTH") else {
+//            print("open | prefs:root=HEALTH -- > didn't work")
+//            return
+//        }
+
+
+//        if UIApplication.shared.canOpenURL(settingsHealthUrl) {
+//            UIApplication.shared.open(settingsHealthUrl, options: [:], completionHandler: nil)
+//        }
+//        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+//            if UIApplication.shared.canOpenURL(settingsURL) {
+//                UIApplication.shared.open(settingsURL)
+//            }
+//        }
     }
     
     @objc func alertDeleteConfirmation() {
