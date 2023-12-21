@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import HealthKit
+//import HealthKit
 
 class LoginVC: TemplateVC {
     
@@ -14,7 +14,7 @@ class LoginVC: TemplateVC {
     var urlStore: URLStore!
     var requestStore: RequestStore!
     var appleHealthDataFetcher: AppleHealthDataFetcher!
-    var hkHealthStore: HKHealthStore!
+//    var hkHealthStore: HKHealthStore!
     var healthDataStore: HealthDataStore!
     
     // Login
@@ -84,8 +84,10 @@ class LoginVC: TemplateVC {
         // Set up tap gesture to dismiss keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(viewTapped))
         view.addGestureRecognizer(tapGesture)
-        self.hkHealthStore = HKHealthStore()
-        authorizeHealthKit(healthStore: self.hkHealthStore)
+//        self.hkHealthStore = HKHealthStore()
+        print("-- self.appleHealthDataFetcher.authorizeHealthKit() --")
+        self.appleHealthDataFetcher.authorizeHealthKit()
+        print("-- self.appleHealthDataFetcher.authorizeHealthKit() END ---")
         setup_lblTitle()
         setup_stckVwLogin()
         setup_btnLogin()

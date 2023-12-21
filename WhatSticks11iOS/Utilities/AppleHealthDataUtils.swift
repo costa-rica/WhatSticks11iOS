@@ -8,21 +8,19 @@
 import Foundation
 import HealthKit
 
-func authorizeHealthKit(healthStore: HKHealthStore) {
-    // Specify the data types you want to read
-    let healthKitTypesToRead: Set<HKObjectType> = [
-        HKObjectType.quantityType(forIdentifier: .stepCount)!,
-        HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-        HKObjectType.quantityType(forIdentifier: .heartRate)!,
-        HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!
-    ]
-    // Request authorization
-    healthStore.requestAuthorization(toShare: nil, read: healthKitTypesToRead) { (success, error) in
-        if success {
-            print("-- User allowed Read Health data")
-        } else {
-            // Handle the error here.
-            print("Authorization failed with error: \(error?.localizedDescription ?? "unknown error")")
+enum HealthDataFetcherError: Error {
+    case invalidQuantityType
+    case fetchingError
+    case unknownError
+    case sleepAnalysisNotAvailible
+    case unauthorizedAccess
+    case typeNotFound
+    
+    var localizedDescription: String {
+        switch self {
+        case .invalidQuantityType: return "HealthDataFetcherError."
+        case .typeNotFound: return "One of your Apple Health Data was not found"
+        default: return "idk ... ¯\\_(ツ)_/¯ ... HealthDataFetcherError."
         }
     }
 }
@@ -30,18 +28,50 @@ func authorizeHealthKit(healthStore: HKHealthStore) {
 class AppleHealthDataFetcher {
     let healthStore = HKHealthStore()
     
-    // steps history
-    func fetchStepsAndOtherQuantityType(quantityTypeIdentifier: HKQuantityTypeIdentifier, startDate: Date? = nil, completion: @escaping ([[String: String]]) -> Void) {
-        print("- accessed fetchStepsAndOtherQuantityType, fetching \(quantityTypeIdentifier.rawValue) ")
-        
-        var stepsEntries = [[String: String]]()
+    func authorizeHealthKit() {
+        print("AppleHealthDataFetcher.authorizeHealthKit ---> requesting access ")
+        // Specify the data types you want to read
+        let healthKitTypesToRead: Set<HKObjectType> = [
+            HKObjectType.quantityType(forIdentifier: .stepCount)!,
+            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
+            HKObjectType.quantityType(forIdentifier: .heartRate)!,
+            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!
+        ]
 
+        // Request authorization for read-only access
+        healthStore.requestAuthorization(toShare: nil, read: healthKitTypesToRead) { (success, error) in
+            if success {
+                print("-- User allowed Read Health data")
+                print("Show me SLEEP authorization after approving:")
+                let authorizationStatusSleep = self.healthStore.authorizationStatus(for: HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!)
+                print("authorizationStatus: \(authorizationStatusSleep.rawValue)")
+                print("Show me STEPS authorization after approving:")
+                let authorizationStatusSteps = self.healthStore.authorizationStatus(for: HKObjectType.quantityType(forIdentifier: .stepCount)!)
+                print("authorizationStatus: \(authorizationStatusSteps.rawValue)")
+                
+            } else {
+                // Handle the error here.
+                print("Authorization failed with error: \(error?.localizedDescription ?? "unknown error")")
+            }
+        }
+    }
+
+    
+    func fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:HKCategoryTypeIdentifier, startDate: Date? = nil, completion:@escaping(Result<[[String:String]],Error>) -> Void){
+        print("- accessed fetchSleepDataAndOtherCategoryType, fetching \(categoryTypeIdentifier.rawValue) ")
+        var sleepEntries = [[String: String]]()
+        if let unwp_startDate = startDate{
+            print("fetching data from \(startDate)")
+        } else {
+            print("No date given fetching data from beginning of time")
+        }
+       
         // Assuming endDate is the current date
         let endDate = Date()
         
-        guard let quantityType = HKQuantityType.quantityType(forIdentifier: quantityTypeIdentifier) else {
-            print("Invalid quantity type")
-            completion([])
+        guard let categoryType = HKObjectType.categoryType(forIdentifier: categoryTypeIdentifier) else {
+            print("CategoryType (sleep) type not available ---> **** Expected when user did not allow for Sleep data ********")
+            completion(.failure(HealthDataFetcherError.typeNotFound))
             return
         }
 
@@ -53,14 +83,67 @@ class AppleHealthDataFetcher {
             predicate = HKQuery.predicateForSamples(withStart: nil, end: endDate, options: .strictEndDate)
         }
 
-        let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
+        let query = HKSampleQuery(sampleType: categoryType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
             DispatchQueue.main.async{
-                guard error == nil else {
-                    print("Error making query: \(error?.localizedDescription ?? "Unknown error")")
-                    completion([])
-                    return
+                if let error = error {
+                    print("Error making query: \(error.localizedDescription )")
+                    completion(.failure(error))
                 }
                 
+                samples?.forEach { sample in
+                    if let sample = sample as? HKCategorySample {
+                        var entry: [String: String] = [:]
+                        entry["sampleType"] = sample.sampleType.identifier
+                        entry["startDate"] = sample.startDate.description
+                        entry["endDate"] = sample.endDate.description
+                        entry["value"] = String(sample.value)
+                        entry["metadata"] = sample.metadata?.description ?? "No Metadata"
+                        entry["sourceName"] = sample.sourceRevision.source.name
+                        entry["sourceVersion"] = sample.sourceRevision.version ?? "Unknown"
+                        entry["sourceProductType"] = sample.sourceRevision.productType ?? "Unknown"
+                        entry["device"] = sample.device?.name ?? "Unknown Device"
+                        entry["UUID"] = sample.uuid.uuidString
+                        sleepEntries.append(entry)
+                    }
+                }
+                completion(.success(sleepEntries))
+                print("fetchSleepDataAndOtherCategoryType finished:::: \(categoryTypeIdentifier.rawValue) count: \(sleepEntries.count)")
+            }
+        }
+        healthStore.execute(query)
+    }
+    
+    
+    func fetchStepsAndOtherQuantityType(quantityTypeIdentifier: HKQuantityTypeIdentifier, startDate: Date? = nil, completion: @escaping (Result<[[String: String]], Error>) -> Void) {
+        print("- accessed fetchStepsAndOtherQuantityType, fetching \(quantityTypeIdentifier.rawValue) ")
+        if let unwp_startDate = startDate{
+            print("fetching data from \(startDate)")
+        } else {
+            print("No date given fetching data from beginning of time")
+        }
+        
+        var stepsEntries = [[String: String]]()
+        // Assuming endDate is the current date
+        let endDate = Date()
+        guard let quantityType = HKQuantityType.quantityType(forIdentifier: quantityTypeIdentifier) else {
+            print("Invalid quantity type")
+            completion(.failure(HealthDataFetcherError.typeNotFound))
+            return
+        }
+        let predicate: NSPredicate
+        if let startDate = startDate {
+            predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        } else {
+            // If startDate is nil, the predicate will not filter based on the start date
+            predicate = HKQuery.predicateForSamples(withStart: nil, end: endDate, options: .strictEndDate)
+        }
+        let query = HKSampleQuery(sampleType: quantityType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
+            DispatchQueue.main.async{
+                if let error = error{
+                    print("Error making query: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
                 samples?.forEach { sample in
                     if let sample = sample as? HKQuantitySample {
                         var entry: [String: String] = [:]
@@ -82,66 +165,13 @@ class AppleHealthDataFetcher {
                         stepsEntries.append(entry)
                     }
                 }
-                completion(stepsEntries)
-                print("stepsEntries count: \(stepsEntries.count)")
+                completion(.success(stepsEntries))
+                print("fetchStepsAndOtherQuantityType finished::: \(quantityTypeIdentifier.rawValue) count: \(stepsEntries.count)")
             }
         }
         healthStore.execute(query)
     }
-    
-    // All Sleep data
-    func fetchSleepData(categoryTypeIdentifier: HKCategoryTypeIdentifier, startDate: Date? = nil, completion: @escaping ([[String: String]]) -> Void) {
-        var sleepEntries = [[String: String]]()
 
-        
-        // Assuming endDate is the current date
-        let endDate = Date()
-        
-        guard let sleepType = HKObjectType.categoryType(forIdentifier: categoryTypeIdentifier) else {
-            print("Sleep Analysis type not available")
-            completion([])
-            return
-        }
-        let predicate: NSPredicate
-        if let startDate = startDate {
-            predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
-        } else {
-            // If startDate is nil, the predicate will not filter based on the start date
-            predicate = HKQuery.predicateForSamples(withStart: nil, end: endDate, options: .strictEndDate)
-        }
-
-        let query = HKSampleQuery(sampleType: sleepType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
-            DispatchQueue.main.async{
-                guard error == nil else {
-                    print("Error making query: \(error?.localizedDescription ?? "Unknown error")")
-                    completion([])
-                    return
-                }
-                
-                samples?.forEach { sample in
-                    if let sample = sample as? HKCategorySample {
-                        var entry: [String: String] = [:]
-                        entry["sampleType"] = sample.sampleType.identifier
-                        entry["startDate"] = sample.startDate.description
-                        entry["endDate"] = sample.endDate.description
-                        entry["value"] = String(sample.value)
-                        entry["metadata"] = sample.metadata?.description ?? "No Metadata"
-                        entry["sourceName"] = sample.sourceRevision.source.name
-                        entry["sourceVersion"] = sample.sourceRevision.version ?? "Unknown"
-                        entry["sourceProductType"] = sample.sourceRevision.productType ?? "Unknown"
-                        entry["device"] = sample.device?.name ?? "Unknown Device"
-                        entry["UUID"] = sample.uuid.uuidString
-                        sleepEntries.append(entry)
-                    }
-                }
-                completion(sleepEntries)
-                print("sleepEntries count: \(sleepEntries.count)")
-            }
-        }
-
-        let healthStore = HKHealthStore()
-        healthStore.execute(query)
-    }
     
     
 }

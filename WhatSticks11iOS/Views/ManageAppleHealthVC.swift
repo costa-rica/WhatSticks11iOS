@@ -14,6 +14,7 @@ class ManageAppleHealthVC: TemplateVC {
     var requestStore: RequestStore!
     var appleHealthDataFetcher:AppleHealthDataFetcher!
     var healthDataStore: HealthDataStore!
+    var criticalDataFlag=true
     
     let datePicker = UIDatePicker()
     let btnGetData = UIButton()
@@ -23,28 +24,24 @@ class ManageAppleHealthVC: TemplateVC {
     let lblDatePicker = UILabel()
     var arryStepsDict = [[String:String]](){
         didSet{
-            actionGetHeartRateData()
+            print("- in arryStepsDict didSet")
+            actionGetSleepData()
         }
     }
     var arrySleepDict = [[String:String]](){
         didSet{
-            
-            let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
-            if all_data_count > 0{
-                print("sending \(String(all_data_count)) records")
-                self.sendAppleHealthData(arryAppleHealthData: arrySleepDict + arryStepsDict + arryHeartRateDict)
-            }
-            else{
-                self.templateAlert(alertMessage: "No records found to add. Check dates.")
-            }
+            print("- in arrySleepDict didSet")
+            actionGetHeartRateData()
         }
     }
     var arryHeartRateDict = [[String:String]](){
         didSet{
-            print("get haert rate")
-            actionGetSleepData()
+            print("- in arryHeartRateDict didSet")
+            necessaryDataCollected()
         }
     }
+
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
@@ -99,79 +96,78 @@ class ManageAppleHealthVC: TemplateVC {
         btnGetData.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(btnGetData)
         btnGetData.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
-        btnGetData.addTarget(self, action: #selector(actionGetData), for: .touchUpInside)
+        btnGetData.addTarget(self, action: #selector(actionGetStepsData), for: .touchUpInside)
         btnGetData.topAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
         btnGetData.trailingAnchor.constraint(equalTo: vwFooter.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
         btnGetData.backgroundColor = .systemBlue
         btnGetData.layer.cornerRadius = 10
         btnGetData.setTitle(" Add Data ", for: .normal)
     }
-    private func setup_btnDeleteData() {
-        btnDeleteData.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(btnDeleteData)
-        btnDeleteData.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
-        btnDeleteData.addTarget(self, action: #selector(alertDeleteConfirmation), for: .touchUpInside)
-        btnDeleteData.topAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
-        btnDeleteData.leadingAnchor.constraint(equalTo: vwFooter.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
-        btnDeleteData.backgroundColor = .systemOrange
-        btnDeleteData.layer.cornerRadius = 10
-        btnDeleteData.setTitle(" Delete Data ", for: .normal)
-    }
+    
     @objc func switchChanged(mySwitch: UISwitch) {
         let isOn = mySwitch.isOn
         datePicker.isHidden = isOn
         lblDatePicker.isHidden = isOn
     }
-    @objc func actionGetData() {
+    
+    
+    @objc func actionGetStepsData() {
         self.showSpinner()
-        if swtchAllHistory.isOn {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount) { arryStepsDict in
-                self.arryStepsDict = arryStepsDict
-            }
-        } else {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.datePicker.date) { arryStepsDict in
-                self.arryStepsDict = arryStepsDict
+            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.datePicker.date) { fetcherResult in
+                switch fetcherResult{
+                case let .success(arryStepsDict):
+                    print("succesfully collected - arryStepsDict - from healthFetcher class")
+                    self.arryStepsDict = arryStepsDict
+                    if arryStepsDict.count == 0 {
+                        self.templateAlert(alertMessage: "Either you did not allow permissions of there is no STEPS data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
+                        self.removeSpinner()
+                    }
+                case let .failure(error):
+                    self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without steps data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
+                    print("There was an error getting steps: \(error)")
+                    self.removeSpinner()
+                }
             }
         }
-    }
     func actionGetSleepData(){
-        if swtchAllHistory.isOn {
-            self.appleHealthDataFetcher.fetchSleepData(categoryTypeIdentifier:.sleepAnalysis) { arrySleepDict in
-                self.arrySleepDict = arrySleepDict
-            }
-        } else {
-            self.appleHealthDataFetcher.fetchSleepData(categoryTypeIdentifier: .sleepAnalysis, startDate: self.datePicker.date) { arrySleepDict in
-                self.arrySleepDict = arrySleepDict
+            self.appleHealthDataFetcher.fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:.sleepAnalysis, startDate: self.datePicker.date) { fetcherResult in
+                switch fetcherResult{
+                case let .success(arrySleepDict):
+                    print("succesfully collected - arrySleepDict - from healthFetcher class")
+                    self.arrySleepDict = arrySleepDict
+                    if arrySleepDict.count == 0 {
+                        self.templateAlert(alertMessage: "Either you did not allow permissions of there is no SLEEP data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
+                        self.removeSpinner()
+                    }
+                case let .failure(error):
+                    self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without sleep data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
+                    print("There was an error getting sleep: \(error)")
+                    self.removeSpinner()
+                
             }
         }
     }
     func actionGetHeartRateData(){
-        if swtchAllHistory.isOn {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate) { arryHeartRateDict in
-                self.arryHeartRateDict = arryHeartRateDict
+            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.datePicker.date) { fetcherResult in
+                switch fetcherResult{
+                case let .success(arryHeartRateDict):
+                    print("succesfully collected - arryHeartRateDict - from healthFetcher class")
+                    self.arryHeartRateDict = arryHeartRateDict
+                case let .failure(error):
+                    print("There was an error getting heart rate: \(error)")
+                    self.removeSpinner()
             }
-        } else {
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.datePicker.date) { arryHeartRateDict in
-                self.arryHeartRateDict = arryHeartRateDict
             }
-        }
     }
-    // This function could be called when you want to show the delete confirmation
-    @objc func alertDeleteConfirmation() {
-        let alertController = UIAlertController(title: "Are you sure you want to delete?", message: "This will only delete Apple Health Data from What Sticks Databases. Your Apple Health Data remain be unaffected.", preferredStyle: .alert)
-        // 'Yes' action
-        let yesAction = UIAlertAction(title: "Yes", style: .destructive) { [weak self] _ in
-            // Handle the 'Yes' action here
-            self?.showSpinner()
-            self?.deleteAppleHealthData()
+    func necessaryDataCollected(){
+        let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
+        if all_data_count > 0{
+            print("sending (arrySleepDict + arryStepsDict + arryHeartRateDict): \(String(all_data_count)) records")
+            self.sendAppleHealthData(arryAppleHealthData: arrySleepDict + arryStepsDict + arryHeartRateDict)
         }
-        // 'No' action
-        let noAction = UIAlertAction(title: "No", style: .cancel, handler: nil)
-        // Adding actions to the alert controller
-        alertController.addAction(yesAction)
-        alertController.addAction(noAction)
-        // Presenting the alert
-        present(alertController, animated: true, completion: nil)
+        else{
+            self.templateAlert(alertMessage: "No records found to add. Check dates.")
+        }
     }
     func sendAppleHealthData(arryAppleHealthData: [[String:String]]){
         self.healthDataStore.callRecieveAppleHealthData(arryAppleHealthData: arryAppleHealthData) { responseResult in
@@ -179,8 +175,7 @@ class ManageAppleHealthVC: TemplateVC {
             switch responseResult{
             case let .success(responseDict):
                 
-
-                
+                                
                 if let unwp_count_of_user_apple_health_records = responseDict["count_of_user_apple_health_records"]{
                     
                     self.templateAlert(alertTitle: "Success", alertMessage: "Added \(responseDict["count_of_added_records"] ?? "<failed to get count_of_added_records key from response> ") records")
@@ -204,6 +199,36 @@ class ManageAppleHealthVC: TemplateVC {
                 self.templateAlert(alertMessage: "Failed to upload data. Error: \(error)")
             }
         }
+    }
+    
+    
+    private func setup_btnDeleteData() {
+        btnDeleteData.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(btnDeleteData)
+        btnDeleteData.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnDeleteData.addTarget(self, action: #selector(alertDeleteConfirmation), for: .touchUpInside)
+        btnDeleteData.topAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
+        btnDeleteData.leadingAnchor.constraint(equalTo: vwFooter.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+        btnDeleteData.backgroundColor = .systemOrange
+        btnDeleteData.layer.cornerRadius = 10
+        btnDeleteData.setTitle(" Delete Data ", for: .normal)
+    }
+    // This function could be called when you want to show the delete confirmation
+    @objc func alertDeleteConfirmation() {
+        let alertController = UIAlertController(title: "Are you sure you want to delete?", message: "This will only delete Apple Health Data from What Sticks Databases. Your Apple Health Data remain be unaffected.", preferredStyle: .alert)
+        // 'Yes' action
+        let yesAction = UIAlertAction(title: "Yes", style: .destructive) { [weak self] _ in
+            // Handle the 'Yes' action here
+            self?.showSpinner()
+            self?.deleteAppleHealthData()
+        }
+        // 'No' action
+        let noAction = UIAlertAction(title: "No", style: .cancel, handler: nil)
+        // Adding actions to the alert controller
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+        // Presenting the alert
+        present(alertController, animated: true, completion: nil)
     }
     func deleteAppleHealthData(){
         self.healthDataStore.callDeleteAppleHealthData { responseResult in

@@ -12,30 +12,29 @@ class ManageUserVC: TemplateVC{
     var userStore: UserStore!
     var requestStore: RequestStore!
     var healthDataStore:HealthDataStore!
+    var appleHealthDataFetcher: AppleHealthDataFetcher!
     var btnDeleteUser=UIButton()
     var swtchEmailNotifications = UISwitch()
     var lblEmailNotifications = UILabel()
-    var spinnerViewManageUserVC:UIView!
+//    var spinnerViewManageUserVC:UIView!
+    var btnManageHealthSettings = UIButton()
+    var lblFindSettingsScreenForAppleHealthPermission = UILabel()
+    var lblPermissionsTitle = UILabel()
+    
  
     override func viewDidLoad() {
         super.viewDidLoad()
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Account"
         print("- in ManageUserVC viewDidLoad -")
-        setupEmailNotifications()
+        
         setup_btnDeleteUser()
+
+        setup_lblFindSettingsScreenForAppleHealthPermission()
+//        setupEmailNotifications()
+//        setup_btnManageHealthSettings()
     }
-    private func setupEmailNotifications() {
-        swtchEmailNotifications.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(swtchEmailNotifications)
-        swtchEmailNotifications.topAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: 5)).isActive = true
-        swtchEmailNotifications.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive = true
-        lblEmailNotifications.text = "Turn off email notifications"
-        lblEmailNotifications.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(lblEmailNotifications)
-        lblEmailNotifications.centerYAnchor.constraint(equalTo: swtchEmailNotifications.centerYAnchor).isActive = true
-        lblEmailNotifications.trailingAnchor.constraint(equalTo: swtchEmailNotifications.leadingAnchor, constant: widthFromPct(percent: -2)).isActive = true
-    }
+
     
     func setup_btnDeleteUser(){
         view.addSubview(btnDeleteUser)
@@ -56,6 +55,80 @@ class ManageUserVC: TemplateVC{
         }, completion: nil)
         print("delete user api call")
         alertDeleteConfirmation()
+    }
+    func setup_lblFindSettingsScreenForAppleHealthPermission(){
+        
+        view.addSubview(lblPermissionsTitle)
+        lblPermissionsTitle.text = "Apple Health Permissions:"
+        lblPermissionsTitle.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        lblPermissionsTitle.translatesAutoresizingMaskIntoConstraints = false
+        lblPermissionsTitle.accessibilityIdentifier="lblPermissionsTitle"
+        lblPermissionsTitle.topAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: 3)).isActive=true
+        lblPermissionsTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+        lblPermissionsTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+        
+        
+        view.addSubview(lblFindSettingsScreenForAppleHealthPermission)
+        lblFindSettingsScreenForAppleHealthPermission.translatesAutoresizingMaskIntoConstraints=false
+        lblFindSettingsScreenForAppleHealthPermission.accessibilityIdentifier="lblFindSettingsScreenForAppleHealthPermission"
+        let text_for_message = "Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.\n\nFor this app to work properly please make sure all data types are allowed."
+        lblFindSettingsScreenForAppleHealthPermission.text = text_for_message
+        lblFindSettingsScreenForAppleHealthPermission.numberOfLines = 0
+        lblFindSettingsScreenForAppleHealthPermission.topAnchor.constraint(equalTo: lblPermissionsTitle.bottomAnchor, constant: heightFromPct(percent: 3)).isActive=true
+        lblFindSettingsScreenForAppleHealthPermission.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+        lblFindSettingsScreenForAppleHealthPermission.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+    }
+    private func setupEmailNotifications() {
+        swtchEmailNotifications.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(swtchEmailNotifications)
+        swtchEmailNotifications.topAnchor.constraint(equalTo: lblFindSettingsScreenForAppleHealthPermission.bottomAnchor, constant: heightFromPct(percent: 5)).isActive = true
+        swtchEmailNotifications.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive = true
+        lblEmailNotifications.text = "Turn off email notifications"
+        lblEmailNotifications.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(lblEmailNotifications)
+        lblEmailNotifications.centerYAnchor.constraint(equalTo: swtchEmailNotifications.centerYAnchor).isActive = true
+        lblEmailNotifications.trailingAnchor.constraint(equalTo: swtchEmailNotifications.leadingAnchor, constant: widthFromPct(percent: -2)).isActive = true
+    }
+    func setup_btnManageHealthSettings(){
+        view.addSubview(btnManageHealthSettings)
+        btnManageHealthSettings.translatesAutoresizingMaskIntoConstraints=false
+        btnManageHealthSettings.accessibilityIdentifier="btnManageHealthSettings"
+        btnManageHealthSettings.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnManageHealthSettings.addTarget(self, action: #selector(touchUpInside_btnManageHealthSettings(_:)), for: .touchUpInside)
+        btnManageHealthSettings.bottomAnchor.constraint(equalTo: btnDeleteUser.topAnchor, constant: heightFromPct(percent: -10)).isActive=true
+        btnManageHealthSettings.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+        btnManageHealthSettings.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+        btnManageHealthSettings.backgroundColor = .systemBlue
+        btnManageHealthSettings.layer.cornerRadius = 10
+        btnManageHealthSettings.setTitle(" Go to Apple Health Data Settings ", for: .normal)
+    }
+    @objc func touchUpInside_btnManageHealthSettings(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
+            sender.transform = .identity
+        }, completion: nil)
+        print(" btnManageHealthSettings ")
+        self.appleHealthDataFetcher.authorizeHealthKit()
+//        guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+//            return
+//        }
+//        // ARticle that might be helpful: https://medium.com/p/20871139d72f
+////        guard let settingsHealthUrl = URL(string: "x-apple-health://") else {
+////            return
+////        }
+//        guard let settingsHealthUrl = URL(string: "prefs:root=HEALTH") else {
+//            print("open | prefs:root=HEALTH -- > didn't work")
+//            return
+//        }
+
+
+//        if UIApplication.shared.canOpenURL(settingsHealthUrl) {
+//            UIApplication.shared.open(settingsHealthUrl, options: [:], completionHandler: nil)
+//        }
+//        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+//            if UIApplication.shared.canOpenURL(settingsURL) {
+//                UIApplication.shared.open(settingsURL)
+//            }
+//        }
     }
     
     @objc func alertDeleteConfirmation() {
