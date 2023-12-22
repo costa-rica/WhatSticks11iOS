@@ -49,6 +49,30 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
             self.tblDataSources.reloadRows(at: indexPaths, with: .automatic)
         }
     }// This tries to reload when data was added via AppleHealthDataVC
+    override func viewWillAppear(_ animated: Bool) {
+        self.userStore.callSendDataSourceObjects { responseResult in
+            switch responseResult{
+            case let .success(arryDataSourceObjects):
+                self.userStore.arryDataSourceObjects = arryDataSourceObjects
+                self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
+                self.refreshValuesInTable()
+                self.refreshDashboardTableObjects()
+            case .failure(_):
+                print("No new data")
+            }
+        }
+    }
+    func refreshDashboardTableObjects(){
+        self.userStore.callSendDashboardTableObjects { result in
+            switch result{
+            case let .success(arryDashboardTableObjects):
+                self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
+                self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
+            case .failure(_):
+                print("no new DashboardTableObjects available yet.")
+            }
+        }
+    }
     func setup_tbl(){
         tblDataSources.accessibilityIdentifier = "tblDataSources"
         tblDataSources.translatesAutoresizingMaskIntoConstraints=false
@@ -64,9 +88,9 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
             switch responseResult{
             case let .success(arryDataSourceObjects):
                 self.userStore.arryDataSourceObjects = arryDataSourceObjects
-//                self.userStore.writeDataSourceJson()
                 self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
                 self.refreshValuesInTable()
+                self.refreshDashboardTableObjects()
             case let .failure(error):
                 sender.endRefreshing()
                 self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")

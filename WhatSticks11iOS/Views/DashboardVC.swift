@@ -37,7 +37,6 @@ class DashboardVC: TemplateVC{
             DispatchQueue.main.async{
                 switch result{
                 case .success(_):
-                    
                     if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
                         print("- found self.userStore.arryDashboardTableObjects")
                         self.dashboardTableObject = unwp_arryDashTableObj[0]
@@ -164,6 +163,22 @@ class DashboardVC: TemplateVC{
     }
     
     @objc private func refreshData(_ sender: UIRefreshControl) {
+
+        self.userStore.callSendDataSourceObjects { responseResult in
+            switch responseResult{
+            case let .success(arryDataSourceObjects):
+                self.userStore.arryDataSourceObjects = arryDataSourceObjects
+                self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
+//                self.refreshValuesInTable()
+                self.refreshDashboardTableObjects(sender)
+            case .failure(_):
+                print("No new data")
+                self.refreshDashboardTableObjects(sender)
+            }
+        }
+    }
+
+    func refreshDashboardTableObjects(_ sender: UIRefreshControl){
         self.userStore.callSendDashboardTableObjects { responseResult in
             DispatchQueue.main.async {
                 switch responseResult {
@@ -173,10 +188,10 @@ class DashboardVC: TemplateVC{
                     for obj in arryDashboardTableObjects{
                         if obj.name == self.lblDashboardTitle.text{
                             self.dashboardTableObject = obj
-//                            print("correaltion for stepcount: \(obj.arryIndepVarObjects![0].correlationValue)")
+                            print("successfully recieved arryDashboardTableObjects from API")
+                            print("correaltion for stepcount: \(obj.arryIndepVarObjects![0].correlationValue)")
                         }
                     }
-//                    self.userStore.writeDashboardJson()
                     self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
                     //self.setup_arryDashDataDict() // Updates data array
                     self.tblDashboard.reloadData() // Reloads table view
@@ -189,7 +204,7 @@ class DashboardVC: TemplateVC{
                             print("* file not found error *")
                             self.templateAlert(alertTitle: "Error", alertMessage: "Dashboard file not found")
                         } else {
-                            
+                            print("* failed to arryDashboardTableObjects from API *")
                             self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
                         }
                     }
@@ -234,7 +249,7 @@ extension DashboardVC: UITableViewDataSource{
             return cell
         }
         let indepVarObject = arryIndepVarObjects[indexPath.row]
-        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value" )
+        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value", observationCount: indepVarObject.correlationObservationCount ?? "no correlation count" )
         return cell
     }
     
@@ -258,6 +273,12 @@ class DashboardTableCell: UITableViewCell {
         return label
     }()
 
+    let lblIndVarObservationCount: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "ArialRoundedMTBold", size: 13)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     let lblCorrelation: UILabel = {
         let label = UILabel()
         // Configure label as needed
@@ -288,12 +309,15 @@ class DashboardTableCell: UITableViewCell {
         contentView.addSubview(lblIndVar)
         contentView.addSubview(circleView)
         contentView.addSubview(lblCorrelation)
+        contentView.addSubview(lblIndVarObservationCount)
 
         // Layout constraints
         NSLayoutConstraint.activate([
             // lblIndVar constraints
             lblIndVar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
             lblIndVar.centerYAnchor.constraint(greaterThanOrEqualTo: contentView.centerYAnchor), // Added top constraint
+            lblIndVarObservationCount.topAnchor.constraint(equalTo: lblIndVar.bottomAnchor, constant: heightFromPct(percent: 1)),
+            lblIndVarObservationCount.leadingAnchor.constraint(equalTo: lblIndVar.leadingAnchor),
 
             // circleView constraints
             circleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
@@ -312,11 +336,12 @@ class DashboardTableCell: UITableViewCell {
 
 
     // Additional methods as needed
-    func setupLabels(indepVarName:String, correlation:String){
+    func setupLabels(indepVarName:String, correlation:String,observationCount: String){
         lblIndVar.text = indepVarName
         lblCorrelation.text = String(format: "%.2f", Double(correlation) ?? "No data")
 //        guard var unwp_correlation = correlation else {return}
         dblCorrelation = Double(correlation) ?? 0.9
+        lblIndVarObservationCount.text = "obs count: \(observationCount)"
     }
 }
 
