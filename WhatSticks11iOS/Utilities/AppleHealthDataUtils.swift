@@ -31,24 +31,16 @@ class AppleHealthDataFetcher {
     func authorizeHealthKit() {
         print("AppleHealthDataFetcher.authorizeHealthKit ---> requesting access ")
         // Specify the data types you want to read
-        let healthKitTypesToRead: Set<HKObjectType> = [
-            HKObjectType.quantityType(forIdentifier: .stepCount)!,
-            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
+        let sampleTypesToRead = Set([
             HKObjectType.quantityType(forIdentifier: .heartRate)!,
-            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!
-        ]
-
-        // Request authorization for read-only access
-        healthStore.requestAuthorization(toShare: nil, read: healthKitTypesToRead) { (success, error) in
-            if success {
-                let authorizationStatusSleep = self.healthStore.authorizationStatus(for: HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!)
-                let authorizationStatusSteps = self.healthStore.authorizationStatus(for: HKObjectType.quantityType(forIdentifier: .stepCount)!)
-                
-            } else {
-                // Handle the error here.
-                print("Authorization failed with error: \(error?.localizedDescription ?? "unknown error")")
-            }
+            HKObjectType.quantityType(forIdentifier: .stepCount)!,
+            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
+        ])
+        
+        healthStore.requestAuthorization(toShare: nil, read: sampleTypesToRead) { (success, error) in
+            print("Request Authorization -- Success: ", success, " Error: ", error ?? "nil")
         }
+
     }
 
     

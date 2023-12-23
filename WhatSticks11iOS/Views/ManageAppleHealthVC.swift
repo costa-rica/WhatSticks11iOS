@@ -48,6 +48,9 @@ class ManageAppleHealthVC: TemplateVC {
         self.lblScreenName.text = "Manage Apple Health"
 //        self.setScreenNameFontSize(size: 20)
         print("- in ManageAppleHealthVC viewDidLoad -")
+        print("-- self.appleHealthDataFetcher.authorizeHealthKit() --")
+        self.appleHealthDataFetcher.authorizeHealthKit()
+        print("-- self.appleHealthDataFetcher.authorizeHealthKit() END ---")
 
         setupAllHistorySwitch()
         setupDatePickerLabel()
