@@ -184,3 +184,70 @@ class ManageUserVC: TemplateVC{
 
 }
 
+
+
+class InfoVC: UIViewController{
+//    var strgTitle
+//    var strgDefinition: String
+    var dashboardTableObject: DashboardTableObject?
+    var lblTitle = UILabel()
+    var lblDetails = UILabel()
+    var vwInfo = UIView()
+    
+    init(dashboardTableObject: DashboardTableObject?){
+//        self.strgDefinition = strgDefinition
+        self.dashboardTableObject = dashboardTableObject
+        super.init(nibName: nil, bundle: nil)
+    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Set the view's frame to take up most of the screen except for 5 percent all sides
+        self.view.frame = UIScreen.main.bounds.inset(by: UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5))
+        setupView()
+        addTapGestureRecognizer()
+    }
+    private func setupView(){
+        lblTitle.text = self.dashboardTableObject?.dependentVarName
+        lblTitle.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        lblTitle.translatesAutoresizingMaskIntoConstraints=false
+        lblDetails.text = self.dashboardTableObject?.definition
+        lblDetails.numberOfLines = 0
+        view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
+        vwInfo.backgroundColor = UIColor.black
+        vwInfo.layer.cornerRadius = 12
+        vwInfo.layer.borderColor = UIColor(named: "gray-500")?.cgColor
+        vwInfo.layer.borderWidth = 2
+        vwInfo.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(vwInfo)
+        vwInfo.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive=true
+        vwInfo.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive=true
+        vwInfo.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.90).isActive=true
+        vwInfo.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 20)).isActive=true
+        
+        
+        vwInfo.addSubview(lblTitle)
+        lblTitle.topAnchor.constraint(equalTo: vwInfo.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
+        lblTitle.leadingAnchor.constraint(equalTo: vwInfo.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+        vwInfo.addSubview(lblDetails)
+        lblDetails.translatesAutoresizingMaskIntoConstraints=false
+        lblDetails.topAnchor.constraint(equalTo: lblTitle.bottomAnchor, constant: heightFromPct(percent: 2)).isActive=true
+        lblDetails.leadingAnchor.constraint(equalTo: vwInfo.leadingAnchor,constant: widthFromPct(percent: 2)).isActive=true
+        lblDetails.trailingAnchor.constraint(equalTo: vwInfo.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
+//        lblDetails.centerYAnchor.constraint(equalTo: vwInfo.centerYAnchor).isActive=true
+    }
+    
+    private func addTapGestureRecognizer() {
+        // Create a tap gesture recognizer
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        // Add the gesture recognizer to the view
+        view.addGestureRecognizer(tapGesture)
+    }
+    @objc private func handleTap(_ sender: UITapGestureRecognizer) {
+            dismiss(animated: true, completion: nil)
+    }
+
+}

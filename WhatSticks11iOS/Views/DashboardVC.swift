@@ -21,6 +21,7 @@ class DashboardVC: TemplateVC{
     var btnRefreshDashboard:UIButton!
     var btnTblDashboardOptions:UIButton?
     var boolTblDashboardOptions:Bool = false
+    var btnDashboardTitleInfo = UIButton(type: .custom)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,6 +66,7 @@ class DashboardVC: TemplateVC{
     func dashboardTableObjectExists(){
         DispatchQueue.main.async {
             self.setup_lblDashboardTitle()
+            self.setupInformationButton()
             self.setup_btnTblDashboardOptions()
             self.tblDashboard = UITableView()
             self.setup_tbl()
@@ -83,7 +85,7 @@ class DashboardVC: TemplateVC{
         }
     }
     func setup_lblDashboardTitle(){
-        lblDashboardTitle.text = self.dashboardTableObject!.name ?? "No title"
+        lblDashboardTitle.text = self.dashboardTableObject!.dependentVarName ?? "No title"
         lblDashboardTitle.font = UIFont(name: "ArialRoundedMTBold", size: 45)
         lblDashboardTitle.translatesAutoresizingMaskIntoConstraints = false
         lblDashboardTitle.accessibilityIdentifier="lblDashboardTitle"
@@ -91,6 +93,33 @@ class DashboardVC: TemplateVC{
         lblDashboardTitle.topAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: bodyTopPaddingPercentage/4)).isActive=true
         lblDashboardTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: bodySidePaddingPercentage)).isActive=true
     }
+    private func setupInformationButton() {
+        if let unwrapped_image = UIImage(named: "information") {
+            let small_image = unwrapped_image.scaleImage(toSize: CGSize(width: 10, height: 10))
+            // Set the image for the button
+            btnDashboardTitleInfo.setImage(small_image, for: .normal)
+            // Add action for button
+            btnDashboardTitleInfo.addTarget(self, action: #selector(infoButtonTapped), for: .touchUpInside)
+            // Add the button to the view
+            self.view.addSubview(btnDashboardTitleInfo)
+            btnDashboardTitleInfo.translatesAutoresizingMaskIntoConstraints=false
+            btnDashboardTitleInfo.leadingAnchor.constraint(equalTo: lblDashboardTitle.trailingAnchor,constant: widthFromPct(percent: 0.5)).isActive=true
+            btnDashboardTitleInfo.centerYAnchor.constraint(equalTo: lblDashboardTitle.centerYAnchor, constant: heightFromPct(percent: -2)).isActive=true
+            
+        }
+
+    }
+    @objc private func infoButtonTapped() {
+        print("button pressed")
+//        if let unwp_def = dashboardTableObject?.definition{
+        let infoVC = InfoVC(dashboardTableObject: self.dashboardTableObject)
+        infoVC.modalPresentationStyle = .overCurrentContext
+        infoVC.modalTransitionStyle = .crossDissolve
+        self.present(infoVC, animated: true, completion: nil)
+//        }
+    }
+    
+    
     func setup_tbl(){
         tblDashboard.accessibilityIdentifier = "tblDashboard"
         tblDashboard.translatesAutoresizingMaskIntoConstraints=false
@@ -176,7 +205,7 @@ class DashboardVC: TemplateVC{
                     print("- DashboardVC userStore.callSendDashboardTableObjects received SUCCESSFUL response")
                     self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
                     for obj in arryDashboardTableObjects{
-                        if obj.name == "Sleep Time"{
+                        if obj.dependentVarName == "Sleep Time"{
                             self.dashboardTableObject = obj
                             self.dashboardTableObjectExists()
                         }
@@ -219,7 +248,7 @@ class DashboardVC: TemplateVC{
                     print("- table updated")
                     self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
                     for obj in arryDashboardTableObjects{
-                        if obj.name == self.lblDashboardTitle.text{
+                        if obj.dependentVarName == self.lblDashboardTitle.text{
                             self.dashboardTableObject = obj
 //                            print("successfully recieved arryDashboardTableObjects from API")
 //                            print("correaltion for stepcount: \(obj.arryIndepVarObjects![0].correlationValue)")
@@ -276,8 +305,10 @@ extension DashboardVC: UITableViewDataSource{
             print("- in cellForRowAt failed to get dashboardTableObject.arryIndepVarObjects ")
             return cell
         }
-        let indepVarObject = arryIndepVarObjects[indexPath.row]
-        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value", observationCount: indepVarObject.correlationObservationCount ?? "no correlation count" )
+//        let indepVarObject = arryIndepVarObjects[indexPath.row]
+//        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value", observationCount: indepVarObject.correlationObservationCount ?? "no correlation count" )
+        cell.indepVarObject = arryIndepVarObjects[indexPath.row]
+        cell.setupLabels()
         return cell
     }
     
@@ -287,12 +318,12 @@ extension DashboardVC: UITableViewDataSource{
 class DashboardTableCell: UITableViewCell {
 
     // Properties
+    var indepVarObject: IndepVarObject!
     var dblCorrelation: Double!
     var lblIndVar = UILabel()
     var lblIndVarObservationCount = UILabel()
     var lblCorrelation = UILabel()
     var vwCircle = UIView()
-    var observationCount=String()
 
     // Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -319,9 +350,9 @@ class DashboardTableCell: UITableViewCell {
         lblCorrelation.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(lblCorrelation)
         
-        lblIndVarObservationCount.font = UIFont(name: "ArialRoundedMTBold", size: 13)
-        lblIndVarObservationCount.translatesAutoresizingMaskIntoConstraints = false
-        self.contentView.addSubview(lblIndVarObservationCount)
+//        lblIndVarObservationCount.font = UIFont(name: "ArialRoundedMTBold", size: 13)
+//        lblIndVarObservationCount.translatesAutoresizingMaskIntoConstraints = false
+//        self.contentView.addSubview(lblIndVarObservationCount)
         
         // Layout constraints
         NSLayoutConstraint.activate([
@@ -330,9 +361,9 @@ class DashboardTableCell: UITableViewCell {
             lblIndVar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
             lblIndVar.centerYAnchor.constraint(greaterThanOrEqualTo: contentView.centerYAnchor), // Added top constraint
             
-            // lblIndVar constraints
-            lblIndVarObservationCount.topAnchor.constraint(equalTo: self.lblIndVar.bottomAnchor, constant: heightFromPct(percent: 1)),
-            lblIndVarObservationCount.leadingAnchor.constraint(equalTo: self.lblIndVar.leadingAnchor),
+//            // lblIndVar constraints
+//            lblIndVarObservationCount.topAnchor.constraint(equalTo: self.lblIndVar.bottomAnchor, constant: heightFromPct(percent: 1)),
+//            lblIndVarObservationCount.leadingAnchor.constraint(equalTo: self.lblIndVar.leadingAnchor),
 
             // vwCircle constraints
             vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
@@ -350,23 +381,26 @@ class DashboardTableCell: UITableViewCell {
     }
 
     // Additional methods as needed
-    func setupLabels(indepVarName:String, correlation:String,observationCount: String){
-        lblIndVar.text = indepVarName
-        dblCorrelation = Double(correlation) ?? 0.9
-        self.observationCount = observationCount
-        if let unwp_float = Float(correlation){
-            if unwp_float < 0.0{
-                vwCircle.backgroundColor = UIColor.wsYellowFromDecimal(CGFloat(unwp_float))
-            }
-            else{
-                vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(unwp_float))
+//    func setupLabels(indepVarName:String, correlation:String,observationCount: String){
+    func setupLabels(){
+        lblIndVar.text = indepVarObject.independentVarName
+//        dblCorrelation = Double(indepVarObject.correlationValue) ?? 0.9
+        //        self.observationCount = observationCount
+        if let unwp_corr_value = indepVarObject.correlationValue {
+            if let unwp_float = Double(unwp_corr_value){
+                if unwp_float < 0.0{
+                    vwCircle.backgroundColor = UIColor.wsYellowFromDecimal(CGFloat(unwp_float))
+                }
+                else{
+                    vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(unwp_float))
+                }
             }
         }
     }
     
     func updateVisibility(isVisible: Bool) {
-        lblIndVarObservationCount.text = isVisible ? "obs count: \(self.observationCount)" : ""
-        lblCorrelation.text = isVisible ? String(format: "%.2f", Double(self.dblCorrelation)) : ""
+        guard let unwp_correlationValue = indepVarObject.correlationValue else {return}
+        lblCorrelation.text = isVisible ? String(format: "%.2f", Double(unwp_correlationValue) ?? 0.0) : ""
     }
 }
 
