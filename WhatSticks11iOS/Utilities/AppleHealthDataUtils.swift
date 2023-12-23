@@ -41,13 +41,8 @@ class AppleHealthDataFetcher {
         // Request authorization for read-only access
         healthStore.requestAuthorization(toShare: nil, read: healthKitTypesToRead) { (success, error) in
             if success {
-                print("-- User allowed Read Health data")
-                print("Show me SLEEP authorization after approving:")
                 let authorizationStatusSleep = self.healthStore.authorizationStatus(for: HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!)
-                print("authorizationStatus: \(authorizationStatusSleep.rawValue)")
-                print("Show me STEPS authorization after approving:")
                 let authorizationStatusSteps = self.healthStore.authorizationStatus(for: HKObjectType.quantityType(forIdentifier: .stepCount)!)
-                print("authorizationStatus: \(authorizationStatusSteps.rawValue)")
                 
             } else {
                 // Handle the error here.
@@ -60,11 +55,11 @@ class AppleHealthDataFetcher {
     func fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:HKCategoryTypeIdentifier, startDate: Date? = nil, completion:@escaping(Result<[[String:String]],Error>) -> Void){
         print("- accessed fetchSleepDataAndOtherCategoryType, fetching \(categoryTypeIdentifier.rawValue) ")
         var sleepEntries = [[String: String]]()
-        if let unwp_startDate = startDate{
-            print("fetching data from \(startDate)")
-        } else {
-            print("No date given fetching data from beginning of time")
-        }
+//        if let unwp_startDate = startDate{
+//            print("fetching data from \(startDate)")
+//        } else {
+//            print("No date given fetching data from beginning of time")
+//        }
        
         // Assuming endDate is the current date
         let endDate = Date()
@@ -116,11 +111,11 @@ class AppleHealthDataFetcher {
     
     func fetchStepsAndOtherQuantityType(quantityTypeIdentifier: HKQuantityTypeIdentifier, startDate: Date? = nil, completion: @escaping (Result<[[String: String]], Error>) -> Void) {
         print("- accessed fetchStepsAndOtherQuantityType, fetching \(quantityTypeIdentifier.rawValue) ")
-        if let unwp_startDate = startDate{
-            print("fetching data from \(startDate)")
-        } else {
-            print("No date given fetching data from beginning of time")
-        }
+//        if let unwp_startDate = startDate{
+//            print("fetching data from \(startDate)")
+//        } else {
+//            print("No date given fetching data from beginning of time")
+//        }
         
         var stepsEntries = [[String: String]]()
         // Assuming endDate is the current date

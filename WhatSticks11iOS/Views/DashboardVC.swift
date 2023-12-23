@@ -19,6 +19,8 @@ class DashboardVC: TemplateVC{
     var btnCheckDashTableObj = UIButton()
     var lblDashboardTitle=UILabel()
     var btnRefreshDashboard:UIButton!
+    var btnTblDashboardOptions:UIButton?
+    var boolTblDashboardOptions:Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,17 +30,18 @@ class DashboardVC: TemplateVC{
         self.lblScreenName.text = "Dashboard"
         print("- in DashboardVC viewDidLoad -")
         setup_btnGoToManageDataVC()
+        
 
     }
     override func viewWillAppear(_ animated: Bool) {
 
         userStore.checkDashboardJson { result in
-            print("* checking: userStore.checkDashboardJson")
+//            print("* checking: userStore.checkDashboardJson")
             DispatchQueue.main.async{
                 switch result{
                 case .success(_):
                     if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
-                        print("- found self.userStore.arryDashboardTableObjects")
+//                        print("- found self.userStore.arryDashboardTableObjects")
                         self.dashboardTableObject = unwp_arryDashTableObj[0]
                         self.dashboardTableObjectExists()
                     }
@@ -62,6 +65,7 @@ class DashboardVC: TemplateVC{
     func dashboardTableObjectExists(){
         DispatchQueue.main.async {
             self.setup_lblDashboardTitle()
+            self.setup_btnTblDashboardOptions()
             self.tblDashboard = UITableView()
             self.setup_tbl()
             self.tblDashboard.delegate = self
@@ -72,6 +76,7 @@ class DashboardVC: TemplateVC{
             let refreshControl = UIRefreshControl()
             refreshControl.addTarget(self, action: #selector(self.refreshData(_:)), for: .valueChanged)
             self.tblDashboard.refreshControl = refreshControl
+            
             if let _ = self.btnRefreshDashboard{
                 self.btnRefreshDashboard.removeFromSuperview()
             }
@@ -116,6 +121,34 @@ class DashboardVC: TemplateVC{
         performSegue(withIdentifier: "goToManageDataVC", sender: self)
 
     }
+    
+    func setup_btnTblDashboardOptions(){
+        btnTblDashboardOptions = UIButton()
+        guard let btnTblDashboardOptions = btnTblDashboardOptions else {return}
+        view.addSubview(btnTblDashboardOptions)
+        btnTblDashboardOptions.translatesAutoresizingMaskIntoConstraints=false
+        btnTblDashboardOptions.accessibilityIdentifier="btnTblDashboardOptions"
+        btnTblDashboardOptions.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnTblDashboardOptions.addTarget(self, action: #selector(touchUpInside_btnTblDashboardOptions(_:)), for: .touchUpInside)
+        // vwFooter button Placement
+        btnTblDashboardOptions.topAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: 2)).isActive=true
+        btnTblDashboardOptions.leadingAnchor.constraint(equalTo: vwFooter.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
+        btnTblDashboardOptions.backgroundColor = .systemBlue
+        btnTblDashboardOptions.layer.cornerRadius = 10
+        btnTblDashboardOptions.setTitle(" Dashboard Labels ", for: .normal)
+    }
+    @objc func touchUpInside_btnTblDashboardOptions(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
+            sender.transform = .identity
+        }, completion: nil)
+        boolTblDashboardOptions.toggle()
+        for cell in tblDashboard.visibleCells as! [DashboardTableCell] {
+//            cell.setupOptionalElements(areVisible: boolTblDashboardOptions)
+            cell.updateVisibility(isVisible: boolTblDashboardOptions)
+        }
+    }
+    
+    
     func setup_btnRefreshDashboard(){
         btnRefreshDashboard = UIButton()
         view.addSubview(btnRefreshDashboard)
@@ -188,8 +221,8 @@ class DashboardVC: TemplateVC{
                     for obj in arryDashboardTableObjects{
                         if obj.name == self.lblDashboardTitle.text{
                             self.dashboardTableObject = obj
-                            print("successfully recieved arryDashboardTableObjects from API")
-                            print("correaltion for stepcount: \(obj.arryIndepVarObjects![0].correlationValue)")
+//                            print("successfully recieved arryDashboardTableObjects from API")
+//                            print("correaltion for stepcount: \(obj.arryIndepVarObjects![0].correlationValue)")
                         }
                     }
                     self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
@@ -231,11 +264,6 @@ extension DashboardVC: UITableViewDelegate{
 
 extension DashboardVC: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-//        guard let arryIndepVarObjects = dashboardTableObject.arryIndepVarObjects else {
-//            return 0
-//        }
-//        return arryIndepVarObjects.count
         guard let arryIndVarObj = userStore.arryDashboardTableObjects else {
             return 0
         }
@@ -259,40 +287,12 @@ extension DashboardVC: UITableViewDataSource{
 class DashboardTableCell: UITableViewCell {
 
     // Properties
-    var dblCorrelation: Double = 0.0 {
-        didSet {
-            let normalizedValue = CGFloat((dblCorrelation + 1) / 2) // Normalize between 0 and 1
-            circleView.backgroundColor = UIColor(red: 0.5, green: 0.5, blue: normalizedValue, alpha: 1.0)
-        }
-    }
-
-    let lblIndVar: UILabel = {
-        let label = UILabel()
-        label.font = UIFont(name: "ArialRoundedMTBold", size: 20)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    let lblIndVarObservationCount: UILabel = {
-        let label = UILabel()
-        label.font = UIFont(name: "ArialRoundedMTBold", size: 13)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    let lblCorrelation: UILabel = {
-        let label = UILabel()
-        // Configure label as needed
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    let circleView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemBlue
-        view.layer.cornerRadius = heightFromPct(percent: 10) * 0.5 // Adjust as needed
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
+    var dblCorrelation: Double!
+    var lblIndVar = UILabel()
+    var lblIndVarObservationCount = UILabel()
+    var lblCorrelation = UILabel()
+    var vwCircle = UIView()
+    var observationCount=String()
 
     // Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -306,42 +306,68 @@ class DashboardTableCell: UITableViewCell {
 
     // Setup views and constraints
     private func setupViews() {
+        
+        vwCircle.backgroundColor = .systemBlue
+        vwCircle.layer.cornerRadius = heightFromPct(percent: 10) * 0.5 // Adjust as needed
+        vwCircle.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(vwCircle)
+        
+        lblIndVar.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        lblIndVar.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(lblIndVar)
-        contentView.addSubview(circleView)
-        contentView.addSubview(lblCorrelation)
-        contentView.addSubview(lblIndVarObservationCount)
-
+        
+        lblCorrelation.translatesAutoresizingMaskIntoConstraints = false
+        self.contentView.addSubview(lblCorrelation)
+        
+        lblIndVarObservationCount.font = UIFont(name: "ArialRoundedMTBold", size: 13)
+        lblIndVarObservationCount.translatesAutoresizingMaskIntoConstraints = false
+        self.contentView.addSubview(lblIndVarObservationCount)
+        
         // Layout constraints
         NSLayoutConstraint.activate([
+            
             // lblIndVar constraints
             lblIndVar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
             lblIndVar.centerYAnchor.constraint(greaterThanOrEqualTo: contentView.centerYAnchor), // Added top constraint
-            lblIndVarObservationCount.topAnchor.constraint(equalTo: lblIndVar.bottomAnchor, constant: heightFromPct(percent: 1)),
-            lblIndVarObservationCount.leadingAnchor.constraint(equalTo: lblIndVar.leadingAnchor),
+            
+            // lblIndVar constraints
+            lblIndVarObservationCount.topAnchor.constraint(equalTo: self.lblIndVar.bottomAnchor, constant: heightFromPct(percent: 1)),
+            lblIndVarObservationCount.leadingAnchor.constraint(equalTo: self.lblIndVar.leadingAnchor),
 
-            // circleView constraints
-            circleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
-            circleView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            circleView.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
-            circleView.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
-
+            // vwCircle constraints
+            vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
+            vwCircle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            vwCircle.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
+            vwCircle.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
+            
             // lblCorrelation constraints
-            lblCorrelation.centerXAnchor.constraint(equalTo: circleView.centerXAnchor),
-            lblCorrelation.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            lblCorrelation.centerXAnchor.constraint(equalTo: self.vwCircle.centerXAnchor),
+            lblCorrelation.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor),
 
             // Ensure that the bottom of the circleView is not clipped
-            circleView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8) // Added bottom constraint
+            vwCircle.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8) // Added bottom constraint
         ])
     }
-
 
     // Additional methods as needed
     func setupLabels(indepVarName:String, correlation:String,observationCount: String){
         lblIndVar.text = indepVarName
-        lblCorrelation.text = String(format: "%.2f", Double(correlation) ?? "No data")
-//        guard var unwp_correlation = correlation else {return}
         dblCorrelation = Double(correlation) ?? 0.9
-        lblIndVarObservationCount.text = "obs count: \(observationCount)"
+        self.observationCount = observationCount
+        if let unwp_float = Float(correlation){
+            if unwp_float < 0.0{
+                vwCircle.backgroundColor = UIColor.wsYellowFromDecimal(CGFloat(unwp_float))
+            }
+            else{
+                vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(unwp_float))
+            }
+        }
+    }
+    
+    func updateVisibility(isVisible: Bool) {
+        lblIndVarObservationCount.text = isVisible ? "obs count: \(self.observationCount)" : ""
+        lblCorrelation.text = isVisible ? String(format: "%.2f", Double(self.dblCorrelation)) : ""
     }
 }
+
 

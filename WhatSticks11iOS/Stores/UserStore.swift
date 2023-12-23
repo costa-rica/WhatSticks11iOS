@@ -261,7 +261,7 @@ func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
     let jsonFileURL = self.documentsURL.appendingPathComponent(filename)
     do {
         try jsonData.write(to: jsonFileURL)
-        print("Successfully wrote \(filename)")
+//        print("Successfully wrote \(filename)")
     } catch {
         print("Error writing to file: \(error)")
     }
