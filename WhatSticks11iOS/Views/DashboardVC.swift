@@ -67,7 +67,7 @@ class DashboardVC: TemplateVC{
         DispatchQueue.main.async {
             self.setup_lblDashboardTitle()
             self.setupInformationButton()
-            self.setup_btnTblDashboardOptions()
+//            self.setup_btnTblDashboardOptions()
             self.tblDashboard = UITableView()
             self.setup_tbl()
             self.tblDashboard.delegate = self
@@ -110,13 +110,10 @@ class DashboardVC: TemplateVC{
 
     }
     @objc private func infoButtonTapped() {
-        print("button pressed")
-//        if let unwp_def = dashboardTableObject?.definition{
         let infoVC = InfoVC(dashboardTableObject: self.dashboardTableObject)
         infoVC.modalPresentationStyle = .overCurrentContext
         infoVC.modalTransitionStyle = .crossDissolve
         self.present(infoVC, animated: true, completion: nil)
-//        }
     }
     
     
@@ -170,11 +167,6 @@ class DashboardVC: TemplateVC{
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
             sender.transform = .identity
         }, completion: nil)
-//        boolTblDashboardOptions.toggle()
-//        for cell in tblDashboard.visibleCells as! [DashboardTableCell] {
-////            cell.setupOptionalElements(areVisible: boolTblDashboardOptions)
-//            cell.updateVisibility(isVisible: boolTblDashboardOptions)
-//        }
     }
     
     
@@ -315,6 +307,7 @@ extension DashboardVC: UITableViewDataSource{
 //        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value", observationCount: indepVarObject.correlationObservationCount ?? "no correlation count" )
         cell.indepVarObject = arryIndepVarObjects[indexPath.row]
         cell.configureCellWithIndepVarObject()
+        cell.depVarVerb = dashboardTableObject?.verb
         return cell
     }
     
@@ -325,6 +318,7 @@ class DashboardTableCell: UITableViewCell {
 
     // Properties
     var indepVarObject: IndepVarObject!
+    var depVarVerb:String!
     var dblCorrelation: Double!
     var lblIndepVarName = UILabel()
     var lblIndVarObservationCount = UILabel()
@@ -332,20 +326,25 @@ class DashboardTableCell: UITableViewCell {
     var lblCorrelation = UILabel()
     var lblDefinition = UILabel()
     var lblWhatItMeansToYou = UILabel()
+    var txtWhatItMeansToYou = String()
     
     // additional layout paramters
     var isVisible: Bool = false {
         didSet {
-            print("isLabelVisible toggled")
-            lblDefinition.isHidden = !isVisible
+//            print("isLabelVisible toggled")
+//            lblDefinition.isHidden = !isVisible
             lblCorrelation.isHidden = !isVisible
-            print("lblDefinition.isHidden: \(lblDefinition.isHidden)")
-            print("lblCorrelation.isHidden: \(lblCorrelation.isHidden)")
+//            lblWhatItMeansToYou.isHidden = !isVisible
+            stckVwClick.isHidden = !isVisible
+//            print("lblDefinition.isHidden: \(lblDefinition.isHidden)")
+//            print("lblCorrelation.isHidden: \(lblCorrelation.isHidden)")
             showLblDef()
             layoutIfNeeded()
         }
     }
     var lblDefinitionConstraints: [NSLayoutConstraint] = []
+    var stckVwClick = UIStackView()
+//    var unclickedBottomConstraint: [NSLayoutConstraint] = []
     
     // Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -369,38 +368,46 @@ class DashboardTableCell: UITableViewCell {
         vwCircle.layer.cornerRadius = heightFromPct(percent: 10) * 0.5 // Adjust as needed
         vwCircle.translatesAutoresizingMaskIntoConstraints = false
         vwCircle.accessibilityIdentifier="vwCircle"
-                
-        // Layout constraints
-        NSLayoutConstraint.activate([
 
-            // vwCircle constraints
-            vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
-            vwCircle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: heightFromPct(percent: 2)),
-            vwCircle.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
-            vwCircle.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
-
-            // Ensure that the bottom of the circleView is not clipped
-            vwCircle.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8), // Added bottom constraint
-            
-            // lblIndVar constraints
-            lblIndepVarName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
-            lblIndepVarName.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor), // Added top constraint
-        ])
-                
         contentView.addSubview(lblCorrelation)
         lblCorrelation.accessibilityIdentifier="lblCorrelation"
         lblCorrelation.isHidden = true
         lblCorrelation.translatesAutoresizingMaskIntoConstraints=false
         lblCorrelation.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         
-        contentView.addSubview(lblDefinition)
-        lblDefinition.isHidden = true
+        // Layout constraints
+        NSLayoutConstraint.activate([
+            lblIndepVarName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
+            lblIndepVarName.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor),
+            
+            vwCircle.topAnchor.constraint(equalTo: contentView.topAnchor),
+            vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
+            vwCircle.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: heightFromPct(percent: -2)),
+            vwCircle.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
+            vwCircle.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
+
+            lblCorrelation.centerXAnchor.constraint(equalTo: vwCircle.centerXAnchor),
+            lblCorrelation.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor),
+        ])
+        contentView.addSubview(stckVwClick)
+        stckVwClick.isHidden = true
+        stckVwClick.accessibilityIdentifier = "stckVwClick"
+        stckVwClick.axis = .vertical
+        stckVwClick.spacing = heightFromPct(percent: 2)
+        stckVwClick.translatesAutoresizingMaskIntoConstraints=false
+        stckVwClick.addArrangedSubview(lblDefinition)
+        stckVwClick.addArrangedSubview(lblWhatItMeansToYou)
+
+//        contentView.addSubview(lblDefinition)
+        lblDefinition.accessibilityIdentifier="lblDefinition"
+//        lblDefinition.isHidden = true
         lblDefinition.translatesAutoresizingMaskIntoConstraints = false
         lblDefinition.font = UIFont(name: "ArialRoundedMTBold", size: 15)
         lblDefinition.numberOfLines = 0 // Enable multi-line
         
-        contentView.addSubview(lblWhatItMeansToYou)
-        lblWhatItMeansToYou.isHidden = true
+//        contentView.addSubview(lblWhatItMeansToYou)
+        lblWhatItMeansToYou.accessibilityIdentifier="lblWhatItMeansToYou"
+//        lblWhatItMeansToYou.isHidden = true
         lblWhatItMeansToYou.translatesAutoresizingMaskIntoConstraints = false
         lblWhatItMeansToYou.font = UIFont(name: "ArialRoundedMTBold", size: 15)
         lblWhatItMeansToYou.numberOfLines = 0 // Enable multi-line
@@ -421,31 +428,41 @@ class DashboardTableCell: UITableViewCell {
                     vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(dblCorrelation))
                 }
             lblCorrelation.text = String(format: "%.2f", Double(unwp_corr_value) ?? 0.0)
+            whatItMeansToYou()
+            lblWhatItMeansToYou.text = txtWhatItMeansToYou
         }
     }
     func showLblDef() {
         if lblDefinitionConstraints.isEmpty {
             // Create constraints only once and store them
             lblDefinitionConstraints = [
-                lblDefinition.topAnchor.constraint(equalTo: lblIndepVarName.bottomAnchor, constant: heightFromPct(percent: 4)),
-                lblDefinition.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: heightFromPct(percent: -1)),
-                lblDefinition.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
-                lblDefinition.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -4)),
-                
-                lblCorrelation.centerXAnchor.constraint(equalTo: vwCircle.centerXAnchor),
-                lblCorrelation.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor)
+                stckVwClick.topAnchor.constraint(equalTo: lblIndepVarName.bottomAnchor, constant: heightFromPct(percent: 4)),
+                stckVwClick.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: heightFromPct(percent: -1)),
+                stckVwClick.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
+                stckVwClick.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -4)),
             ]
         }
         // Activate or deactivate constraints
         if isVisible {
+//            NSLayoutConstraint.deactivate(unclickedBottomConstraint)
             NSLayoutConstraint.activate(lblDefinitionConstraints)
+            
         } else {
             NSLayoutConstraint.deactivate(lblDefinitionConstraints)
+//            NSLayoutConstraint.activate(unclickedBottomConstraint)
         }
     }
     
     func whatItMeansToYou(){
-        
+        let strCorrelation = String(format: "%.2f", Double(dblCorrelation))
+        if dblCorrelation > 0.25 {
+            txtWhatItMeansToYou = "Since your sign here is positive \(strCorrelation) and closer to 1.0, this means as your \(indepVarObject.noun ?? "indepVarObj.noun") increases you \(depVarVerb ?? "depVarVerb") more."
+        }
+        else if dblCorrelation > -0.25 {
+            txtWhatItMeansToYou = "Since the value is close to 0.0, this means your \(indepVarObject.noun ?? "indepVarObj.noun") doesn’t have much of an impact on how much you \(depVarVerb ?? "depVarVerb")."
+        } else {
+            txtWhatItMeansToYou = "Since your sign here is negative \(strCorrelation) and closer to -1.0, this means as your \(indepVarObject.noun ?? "indepVarObj.noun") increases you \(depVarVerb ?? "depVarVerb") less."
+        }
     }
 }
 
