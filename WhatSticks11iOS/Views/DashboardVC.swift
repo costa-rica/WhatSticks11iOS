@@ -331,11 +331,9 @@ class DashboardTableCell: UITableViewCell {
     var vwCircle = UIView()
     var lblCorrelation = UILabel()
     var lblDefinition = UILabel()
+    var lblWhatItMeansToYou = UILabel()
     
-
     // additional layout paramters
-//    var fltCellHeight = CGFloat()
-//    var fltDiameter = CGFloat()
     var isVisible: Bool = false {
         didSet {
             print("isLabelVisible toggled")
@@ -348,7 +346,6 @@ class DashboardTableCell: UITableViewCell {
         }
     }
     var lblDefinitionConstraints: [NSLayoutConstraint] = []
-//    var fltCellWidth = CGFloat()
     
     // Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -358,24 +355,10 @@ class DashboardTableCell: UITableViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-//    override func layoutSubviews() {
-//        super.layoutSubviews()
-//        print("vwCircle origin: \(vwCircle.frame.origin)")
-//        print("vwCircle size: \(vwCircle.frame.size)")
-//        print("fltCellHeight: \(fltCellHeight)")
-//        print("lblCorrelation origin: \(lblCorrelation.frame.origin)")
-//        print("lblCorrelation size: \(lblCorrelation.frame.size)")
-//    }
+
     // Setup views and constraints
     private func setupViews() {
-//        
-//        // assign layout paramters
-//        fltCellWidth = self.contentView.frame.height
-//        fltCellHeight = self.contentView.frame.height
-//        fltDiameter = heightFromPct(percent: 10)
-        
-        
-        
+
         contentView.addSubview(lblIndepVarName)
         lblIndepVarName.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         lblIndepVarName.translatesAutoresizingMaskIntoConstraints = false
@@ -392,7 +375,6 @@ class DashboardTableCell: UITableViewCell {
 
             // vwCircle constraints
             vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
-//            vwCircle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             vwCircle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: heightFromPct(percent: 2)),
             vwCircle.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
             vwCircle.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
@@ -403,7 +385,6 @@ class DashboardTableCell: UITableViewCell {
             // lblIndVar constraints
             lblIndepVarName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
             lblIndepVarName.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor), // Added top constraint
-//            lblIndepVarName.topAnchor.constraint(equalTo: contentView.topAnchor, constant: heightFromPct(percent: 2)),
         ])
                 
         contentView.addSubview(lblCorrelation)
@@ -418,6 +399,12 @@ class DashboardTableCell: UITableViewCell {
         lblDefinition.font = UIFont(name: "ArialRoundedMTBold", size: 15)
         lblDefinition.numberOfLines = 0 // Enable multi-line
         
+        contentView.addSubview(lblWhatItMeansToYou)
+        lblWhatItMeansToYou.isHidden = true
+        lblWhatItMeansToYou.translatesAutoresizingMaskIntoConstraints = false
+        lblWhatItMeansToYou.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        lblWhatItMeansToYou.numberOfLines = 0 // Enable multi-line
+        
     }
 
     // Additional methods as needed
@@ -426,20 +413,17 @@ class DashboardTableCell: UITableViewCell {
         lblDefinition.text = indepVarObject.definition
 
         if let unwp_corr_value = indepVarObject.correlationValue {
-            if let unwp_float = Double(unwp_corr_value){
-                if unwp_float < 0.0{
-                    vwCircle.backgroundColor = UIColor.wsYellowFromDecimal(CGFloat(unwp_float))
+            dblCorrelation = Double(unwp_corr_value)
+                if dblCorrelation < 0.0{
+                    vwCircle.backgroundColor = UIColor.wsYellowFromDecimal(CGFloat(dblCorrelation))
                 }
                 else{
-                    vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(unwp_float))
+                    vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(dblCorrelation))
                 }
-            }
             lblCorrelation.text = String(format: "%.2f", Double(unwp_corr_value) ?? 0.0)
-            print("what is correaltion text: \(lblCorrelation.text!)")
         }
     }
     func showLblDef() {
-        print("showLblDef()")
         if lblDefinitionConstraints.isEmpty {
             // Create constraints only once and store them
             lblDefinitionConstraints = [
@@ -459,10 +443,10 @@ class DashboardTableCell: UITableViewCell {
             NSLayoutConstraint.deactivate(lblDefinitionConstraints)
         }
     }
-//    func updateVisibility(isVisible: Bool) {
-//        guard let unwp_correlationValue = indepVarObject.correlationValue else {return}
-//        lblCorrelation.text = isVisible ? String(format: "%.2f", Double(unwp_correlationValue) ?? 0.0) : ""
-//    }
+    
+    func whatItMeansToYou(){
+        
+    }
 }
 
 
