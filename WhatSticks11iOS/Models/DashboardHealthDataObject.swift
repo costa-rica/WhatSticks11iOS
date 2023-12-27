@@ -18,6 +18,7 @@ class DashboardTableObject:Codable{
     var sourceDataOfDepVar:String?// This is used in delete, but also in general to loop through userStore.arryDashboardTableObj and find all "Apple Health" or "Oura Ring"
     var arryIndepVarObjects:[IndepVarObject]?
     var definition:String?
+    var verb:String?
 }
 
 class IndepVarObject:Codable{
@@ -26,4 +27,5 @@ class IndepVarObject:Codable{
     var correlationValue:String?
     var correlationObservationCount:String?
     var definition:String?
+    var noun:String?
 }
