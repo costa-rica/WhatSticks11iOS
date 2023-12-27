@@ -20,7 +20,7 @@ class DashboardVC: TemplateVC{
     var lblDashboardTitle=UILabel()
     var btnRefreshDashboard:UIButton!
     var btnTblDashboardOptions:UIButton?
-    var boolTblDashboardOptions:Bool = false
+//    var boolTblDashboardOptions:Bool = false
     var btnDashboardTitleInfo = UIButton(type: .custom)
     
     override func viewDidLoad() {
@@ -170,11 +170,11 @@ class DashboardVC: TemplateVC{
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
             sender.transform = .identity
         }, completion: nil)
-        boolTblDashboardOptions.toggle()
-        for cell in tblDashboard.visibleCells as! [DashboardTableCell] {
-//            cell.setupOptionalElements(areVisible: boolTblDashboardOptions)
-            cell.updateVisibility(isVisible: boolTblDashboardOptions)
-        }
+//        boolTblDashboardOptions.toggle()
+//        for cell in tblDashboard.visibleCells as! [DashboardTableCell] {
+////            cell.setupOptionalElements(areVisible: boolTblDashboardOptions)
+//            cell.updateVisibility(isVisible: boolTblDashboardOptions)
+//        }
     }
     
     
@@ -288,7 +288,13 @@ class DashboardVC: TemplateVC{
 }
 
 extension DashboardVC: UITableViewDelegate{
-    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let cell = tableView.cellForRow(at: indexPath) as? DashboardTableCell else { return }
+        cell.isVisible.toggle()
+        tableView.beginUpdates()
+        tableView.endUpdates()
+    }
+
 }
 
 extension DashboardVC: UITableViewDataSource{
@@ -308,7 +314,7 @@ extension DashboardVC: UITableViewDataSource{
 //        let indepVarObject = arryIndepVarObjects[indexPath.row]
 //        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value", observationCount: indepVarObject.correlationObservationCount ?? "no correlation count" )
         cell.indepVarObject = arryIndepVarObjects[indexPath.row]
-        cell.setupLabels()
+        cell.configureCellWithIndepVarObject()
         return cell
     }
     
@@ -320,72 +326,105 @@ class DashboardTableCell: UITableViewCell {
     // Properties
     var indepVarObject: IndepVarObject!
     var dblCorrelation: Double!
-    var lblIndVar = UILabel()
+    var lblIndepVarName = UILabel()
     var lblIndVarObservationCount = UILabel()
-    var lblCorrelation = UILabel()
     var vwCircle = UIView()
+    var lblCorrelation = UILabel()
+    var lblDefinition = UILabel()
+    
 
+    // additional layout paramters
+//    var fltCellHeight = CGFloat()
+//    var fltDiameter = CGFloat()
+    var isVisible: Bool = false {
+        didSet {
+            print("isLabelVisible toggled")
+            lblDefinition.isHidden = !isVisible
+            lblCorrelation.isHidden = !isVisible
+            print("lblDefinition.isHidden: \(lblDefinition.isHidden)")
+            print("lblCorrelation.isHidden: \(lblCorrelation.isHidden)")
+            showLblDef()
+            layoutIfNeeded()
+        }
+    }
+    var lblDefinitionConstraints: [NSLayoutConstraint] = []
+//    var fltCellWidth = CGFloat()
+    
     // Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
     }
-
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+//    override func layoutSubviews() {
+//        super.layoutSubviews()
+//        print("vwCircle origin: \(vwCircle.frame.origin)")
+//        print("vwCircle size: \(vwCircle.frame.size)")
+//        print("fltCellHeight: \(fltCellHeight)")
+//        print("lblCorrelation origin: \(lblCorrelation.frame.origin)")
+//        print("lblCorrelation size: \(lblCorrelation.frame.size)")
+//    }
     // Setup views and constraints
     private func setupViews() {
+//        
+//        // assign layout paramters
+//        fltCellWidth = self.contentView.frame.height
+//        fltCellHeight = self.contentView.frame.height
+//        fltDiameter = heightFromPct(percent: 10)
         
+        
+        
+        contentView.addSubview(lblIndepVarName)
+        lblIndepVarName.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        lblIndepVarName.translatesAutoresizingMaskIntoConstraints = false
+        lblIndepVarName.accessibilityIdentifier="lblIndepVarName"
+        
+        contentView.addSubview(vwCircle)
         vwCircle.backgroundColor = .systemBlue
         vwCircle.layer.cornerRadius = heightFromPct(percent: 10) * 0.5 // Adjust as needed
         vwCircle.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(vwCircle)
-        
-        lblIndVar.font = UIFont(name: "ArialRoundedMTBold", size: 20)
-        lblIndVar.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(lblIndVar)
-        
-        lblCorrelation.translatesAutoresizingMaskIntoConstraints = false
-        self.contentView.addSubview(lblCorrelation)
-        
-//        lblIndVarObservationCount.font = UIFont(name: "ArialRoundedMTBold", size: 13)
-//        lblIndVarObservationCount.translatesAutoresizingMaskIntoConstraints = false
-//        self.contentView.addSubview(lblIndVarObservationCount)
-        
+        vwCircle.accessibilityIdentifier="vwCircle"
+                
         // Layout constraints
         NSLayoutConstraint.activate([
-            
-            // lblIndVar constraints
-            lblIndVar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
-            lblIndVar.centerYAnchor.constraint(greaterThanOrEqualTo: contentView.centerYAnchor), // Added top constraint
-            
-//            // lblIndVar constraints
-//            lblIndVarObservationCount.topAnchor.constraint(equalTo: self.lblIndVar.bottomAnchor, constant: heightFromPct(percent: 1)),
-//            lblIndVarObservationCount.leadingAnchor.constraint(equalTo: self.lblIndVar.leadingAnchor),
 
             // vwCircle constraints
             vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
-            vwCircle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+//            vwCircle.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            vwCircle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: heightFromPct(percent: 2)),
             vwCircle.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
             vwCircle.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
-            
-            // lblCorrelation constraints
-            lblCorrelation.centerXAnchor.constraint(equalTo: self.vwCircle.centerXAnchor),
-            lblCorrelation.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor),
 
             // Ensure that the bottom of the circleView is not clipped
-            vwCircle.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8) // Added bottom constraint
+            vwCircle.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8), // Added bottom constraint
+            
+            // lblIndVar constraints
+            lblIndepVarName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
+            lblIndepVarName.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor), // Added top constraint
+//            lblIndepVarName.topAnchor.constraint(equalTo: contentView.topAnchor, constant: heightFromPct(percent: 2)),
         ])
+                
+        contentView.addSubview(lblCorrelation)
+        lblCorrelation.accessibilityIdentifier="lblCorrelation"
+        lblCorrelation.isHidden = true
+        lblCorrelation.translatesAutoresizingMaskIntoConstraints=false
+        lblCorrelation.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        
+        contentView.addSubview(lblDefinition)
+        lblDefinition.isHidden = true
+        lblDefinition.translatesAutoresizingMaskIntoConstraints = false
+        lblDefinition.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        lblDefinition.numberOfLines = 0 // Enable multi-line
+        
     }
 
     // Additional methods as needed
-//    func setupLabels(indepVarName:String, correlation:String,observationCount: String){
-    func setupLabels(){
-        lblIndVar.text = indepVarObject.independentVarName
-//        dblCorrelation = Double(indepVarObject.correlationValue) ?? 0.9
-        //        self.observationCount = observationCount
+    func configureCellWithIndepVarObject(){
+        lblIndepVarName.text = indepVarObject.independentVarName
+        lblDefinition.text = indepVarObject.definition
+
         if let unwp_corr_value = indepVarObject.correlationValue {
             if let unwp_float = Double(unwp_corr_value){
                 if unwp_float < 0.0{
@@ -395,13 +434,35 @@ class DashboardTableCell: UITableViewCell {
                     vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(unwp_float))
                 }
             }
+            lblCorrelation.text = String(format: "%.2f", Double(unwp_corr_value) ?? 0.0)
+            print("what is correaltion text: \(lblCorrelation.text!)")
         }
     }
-    
-    func updateVisibility(isVisible: Bool) {
-        guard let unwp_correlationValue = indepVarObject.correlationValue else {return}
-        lblCorrelation.text = isVisible ? String(format: "%.2f", Double(unwp_correlationValue) ?? 0.0) : ""
+    func showLblDef() {
+        print("showLblDef()")
+        if lblDefinitionConstraints.isEmpty {
+            // Create constraints only once and store them
+            lblDefinitionConstraints = [
+                lblDefinition.topAnchor.constraint(equalTo: lblIndepVarName.bottomAnchor, constant: heightFromPct(percent: 4)),
+                lblDefinition.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: heightFromPct(percent: -1)),
+                lblDefinition.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
+                lblDefinition.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -4)),
+                
+                lblCorrelation.centerXAnchor.constraint(equalTo: vwCircle.centerXAnchor),
+                lblCorrelation.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor)
+            ]
+        }
+        // Activate or deactivate constraints
+        if isVisible {
+            NSLayoutConstraint.activate(lblDefinitionConstraints)
+        } else {
+            NSLayoutConstraint.deactivate(lblDefinitionConstraints)
+        }
     }
+//    func updateVisibility(isVisible: Bool) {
+//        guard let unwp_correlationValue = indepVarObject.correlationValue else {return}
+//        lblCorrelation.text = isVisible ? String(format: "%.2f", Double(unwp_correlationValue) ?? 0.0) : ""
+//    }
 }
 
 
