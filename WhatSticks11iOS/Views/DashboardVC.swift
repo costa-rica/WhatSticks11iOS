@@ -384,7 +384,7 @@ class DashboardTableCell: UITableViewCell {
             lblIndepVarName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
             lblIndepVarName.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor),
             
-            vwCircle.topAnchor.constraint(equalTo: contentView.topAnchor),
+            vwCircle.topAnchor.constraint(equalTo: contentView.topAnchor,constant: heightFromPct(percent: 2)),
             vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
             vwCircle.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: heightFromPct(percent: -2)),
             vwCircle.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
@@ -418,10 +418,12 @@ class DashboardTableCell: UITableViewCell {
         
     }
 
+
     // Additional methods as needed
     func configureCellWithIndepVarObject(){
         lblIndepVarName.text = indepVarObject.independentVarName
-        lblDefinition.text = indepVarObject.definition
+        createMultiFontDefinitionString()
+
 
         if let unwp_corr_value = indepVarObject.correlationValue {
             dblCorrelation = Double(unwp_corr_value)
@@ -433,7 +435,7 @@ class DashboardTableCell: UITableViewCell {
                 }
             lblCorrelation.text = String(format: "%.2f", Double(unwp_corr_value) ?? 0.0)
             whatItMeansToYou()
-            lblWhatItMeansToYou.text = txtWhatItMeansToYou
+//            lblWhatItMeansToYou.text = txtWhatItMeansToYou
         }
     }
     func showLblDef() {
@@ -456,19 +458,48 @@ class DashboardTableCell: UITableViewCell {
 //            NSLayoutConstraint.activate(unclickedBottomConstraint)
         }
     }
+    func createMultiFontDefinitionString(){
+        let boldUnderlinedText = "Definition:"
+        let regularText = " " + (indepVarObject.definition ?? "<try reloading>")
+        // Create an attributed string for the bold and underlined part
+        let boldUnderlinedAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.boldSystemFont(ofSize: 17),
+            .underlineStyle: NSUnderlineStyle.single.rawValue
+        ]
+        let boldUnderlinedAttributedString = NSMutableAttributedString(string: boldUnderlinedText, attributes: boldUnderlinedAttributes)
+        // Create an attributed string for the regular part
+        let regularAttributedString = NSAttributedString(string: regularText)
+        // Combine them
+        boldUnderlinedAttributedString.append(regularAttributedString)
+        // Set the attributed text to the label
+        lblDefinition.attributedText = boldUnderlinedAttributedString
+    }
     
     func whatItMeansToYou(){
         let strCorrelation = String(format: "%.2f", Double(dblCorrelation))
-//        DispatchQueue.main.async{
+        var detailsText = String()
             if self.dblCorrelation > 0.25 {
-                self.txtWhatItMeansToYou = "Since your sign here is positive \(strCorrelation) and closer to 1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) more."
+                detailsText = "Since your sign here is positive \(strCorrelation) and closer to 1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) more."
             }
             else if self.dblCorrelation > -0.25 {
-                self.txtWhatItMeansToYou = "Since the value is close to 0.0, this means your \(self.indepVarObject.noun ?? "<try reloading screen>") doesn’t have much of an impact on how much you \(self.depVarVerb ?? "<try reloading screen>" )."
+                detailsText = "Since the value is close to 0.0, this means your \(self.indepVarObject.noun ?? "<try reloading screen>") doesn’t have much of an impact on how much you \(self.depVarVerb ?? "<try reloading screen>" )."
             } else {
-                self.txtWhatItMeansToYou = "Since your sign here is negative \(strCorrelation) and closer to -1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) less."
+                detailsText = "Since your sign here is negative \(strCorrelation) and closer to -1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) less."
             }
-//        }
+        let boldUnderlinedText = "For you:"
+        let regularText = " " + detailsText
+        // Create an attributed string for the bold and underlined part
+        let boldUnderlinedAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.boldSystemFont(ofSize: 17),
+            .underlineStyle: NSUnderlineStyle.single.rawValue
+        ]
+        let boldUnderlinedAttributedString = NSMutableAttributedString(string: boldUnderlinedText, attributes: boldUnderlinedAttributes)
+        // Create an attributed string for the regular part
+        let regularAttributedString = NSAttributedString(string: regularText)
+        // Combine them
+        boldUnderlinedAttributedString.append(regularAttributedString)
+        // Set the attributed text to the label
+        lblWhatItMeansToYou.attributedText = boldUnderlinedAttributedString
     }
 }
 
