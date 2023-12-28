@@ -269,6 +269,7 @@ class DashboardVC: TemplateVC{
             manageDataVC.userStore = self.userStore
             manageDataVC.appleHealthDataFetcher = self.appleHealthDataFetcher
             manageDataVC.healthDataStore = self.healthDataStore
+            manageDataVC.requestStore = self.requestStore
 
         }
 
