@@ -35,11 +35,13 @@ class RequestStore {
         self.fileManager = FileManager.default
         self.documentsURL = self.fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         self.urlStore=URLStore()
-        #if targetEnvironment(simulator)
-        self.urlStore.apiBase = APIBase.local
-        #else
-        self.urlStore.apiBase = APIBase.prod
-        #endif
+        
+        self.urlStore.apiBase = APIBase.dev
+//        #if targetEnvironment(simulator)
+//        self.urlStore.apiBase = APIBase.local
+//        #else
+//        self.urlStore.apiBase = APIBase.prod
+//        #endif
     }
     
     func createRequestLogin(email:String, password:String)->Result<URLRequest,Error>{

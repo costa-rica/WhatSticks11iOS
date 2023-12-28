@@ -28,8 +28,11 @@ class TemplateVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
-        
-
+    }
+    func setupIsDev(urlStore:URLStore){
+        if urlStore.apiBase == .dev{
+            vwTopSafeBar.backgroundColor = UIColor(named: "yellow-dev")
+        }
     }
     private func setupViews() {
         // Setup vwTopSafeBar

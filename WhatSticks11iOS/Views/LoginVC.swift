@@ -11,7 +11,7 @@ import UIKit
 class LoginVC: TemplateVC {
     
     var userStore: UserStore!
-    var urlStore: URLStore!
+//    var urlStore: URLStore!
     var requestStore: RequestStore!
     var appleHealthDataFetcher: AppleHealthDataFetcher!
 //    var hkHealthStore: HKHealthStore!
@@ -75,6 +75,7 @@ class LoginVC: TemplateVC {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.requestStore = RequestStore()
+        self.setupIsDev(urlStore: requestStore.urlStore)
         self.userStore = UserStore()
         self.userStore.requestStore = self.requestStore
         self.appleHealthDataFetcher = AppleHealthDataFetcher()

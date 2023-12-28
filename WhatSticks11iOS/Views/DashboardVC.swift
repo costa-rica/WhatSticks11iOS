@@ -25,7 +25,7 @@ class DashboardVC: TemplateVC{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        self.setupIsDev(urlStore: requestStore.urlStore)
 
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Dashboard"

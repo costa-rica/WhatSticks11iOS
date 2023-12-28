@@ -28,6 +28,7 @@ class RegisterVC: TemplateVC {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.setupIsDev(urlStore: requestStore.urlStore)
         // Set up tap gesture to dismiss keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(viewTapped))
         view.addGestureRecognizer(tapGesture)
