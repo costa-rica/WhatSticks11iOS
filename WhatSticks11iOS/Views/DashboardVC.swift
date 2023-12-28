@@ -20,8 +20,8 @@ class DashboardVC: TemplateVC{
     var lblDashboardTitle=UILabel()
     var btnRefreshDashboard:UIButton!
     var btnTblDashboardOptions:UIButton?
-//    var boolTblDashboardOptions:Bool = false
     var btnDashboardTitleInfo = UIButton(type: .custom)
+//    var
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,7 +116,6 @@ class DashboardVC: TemplateVC{
         self.present(infoVC, animated: true, completion: nil)
     }
     
-    
     func setup_tbl(){
         tblDashboard.accessibilityIdentifier = "tblDashboard"
         tblDashboard.translatesAutoresizingMaskIntoConstraints=false
@@ -147,7 +146,6 @@ class DashboardVC: TemplateVC{
         performSegue(withIdentifier: "goToManageDataVC", sender: self)
 
     }
-    
     func setup_btnTblDashboardOptions(){
         btnTblDashboardOptions = UIButton()
         guard let btnTblDashboardOptions = btnTblDashboardOptions else {return}
@@ -168,8 +166,6 @@ class DashboardVC: TemplateVC{
             sender.transform = .identity
         }, completion: nil)
     }
-    
-    
     func setup_btnRefreshDashboard(){
         btnRefreshDashboard = UIButton()
         view.addSubview(btnRefreshDashboard)
@@ -307,7 +303,15 @@ extension DashboardVC: UITableViewDataSource{
 //        cell.setupLabels(indepVarName: indepVarObject.name ?? "no name", correlation: indepVarObject.correlationValue ?? "no value", observationCount: indepVarObject.correlationObservationCount ?? "no correlation count" )
         cell.indepVarObject = arryIndepVarObjects[indexPath.row]
         cell.configureCellWithIndepVarObject()
-        cell.depVarVerb = dashboardTableObject?.verb
+//        print("dashObject.verb first : \(self.dashboardTableObject?.verb ?? "nil")")
+//        DispatchQueue.main.async{
+//            print("dashObject.verb second : \(self.dashboardTableObject?.verb ?? "nil")")
+            guard let unwp_dashObject = self.dashboardTableObject,
+                  let unwpVerb = unwp_dashObject.verb else {return cell}
+            
+            cell.depVarVerb = unwpVerb
+            print("dashObject.verb third: \(self.dashboardTableObject?.verb ?? "nil")")
+//        }
         return cell
     }
     
@@ -455,14 +459,16 @@ class DashboardTableCell: UITableViewCell {
     
     func whatItMeansToYou(){
         let strCorrelation = String(format: "%.2f", Double(dblCorrelation))
-        if dblCorrelation > 0.25 {
-            txtWhatItMeansToYou = "Since your sign here is positive \(strCorrelation) and closer to 1.0, this means as your \(indepVarObject.noun ?? "indepVarObj.noun") increases you \(depVarVerb ?? "depVarVerb") more."
-        }
-        else if dblCorrelation > -0.25 {
-            txtWhatItMeansToYou = "Since the value is close to 0.0, this means your \(indepVarObject.noun ?? "indepVarObj.noun") doesn’t have much of an impact on how much you \(depVarVerb ?? "depVarVerb")."
-        } else {
-            txtWhatItMeansToYou = "Since your sign here is negative \(strCorrelation) and closer to -1.0, this means as your \(indepVarObject.noun ?? "indepVarObj.noun") increases you \(depVarVerb ?? "depVarVerb") less."
-        }
+//        DispatchQueue.main.async{
+            if self.dblCorrelation > 0.25 {
+                self.txtWhatItMeansToYou = "Since your sign here is positive \(strCorrelation) and closer to 1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) more."
+            }
+            else if self.dblCorrelation > -0.25 {
+                self.txtWhatItMeansToYou = "Since the value is close to 0.0, this means your \(self.indepVarObject.noun ?? "<try reloading screen>") doesn’t have much of an impact on how much you \(self.depVarVerb ?? "<try reloading screen>" )."
+            } else {
+                self.txtWhatItMeansToYou = "Since your sign here is negative \(strCorrelation) and closer to -1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) less."
+            }
+//        }
     }
 }
 
