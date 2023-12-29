@@ -17,11 +17,13 @@ class ManageAppleHealthVC: TemplateVC {
     var criticalDataFlag=true
     
     let datePicker = UIDatePicker()
-    let btnGetData = UIButton()
-    let btnDeleteData = UIButton()
+    let lblDatePicker = UILabel()
     let lblAllHistory = UILabel()
     let swtchAllHistory = UISwitch()
-    let lblDatePicker = UILabel()
+    var swtchAllHistoryIsOn = false
+    var dtUserHistory:Date?
+    let btnGetData = UIButton()
+    let btnDeleteData = UIButton()
     var arryStepsDict = [[String:String]](){
         didSet{
             print("- in arryStepsDict didSet")
@@ -41,18 +43,12 @@ class ManageAppleHealthVC: TemplateVC {
         }
     }
 
-
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupIsDev(urlStore: requestStore.urlStore)
         self.lblUsername.text = userStore.user.username
         self.lblScreenName.text = "Manage Apple Health"
-//        self.setScreenNameFontSize(size: 20)
-        print("- in ManageAppleHealthVC viewDidLoad -")
-        print("-- self.appleHealthDataFetcher.authorizeHealthKit() --")
         self.appleHealthDataFetcher.authorizeHealthKit()
-        print("-- self.appleHealthDataFetcher.authorizeHealthKit() END ---")
-
         setupAllHistorySwitch()
         setupDatePickerLabel()
         setupDatePicker()
@@ -61,29 +57,22 @@ class ManageAppleHealthVC: TemplateVC {
         self.setScreenNameFontSize()
     }
     private func setupAllHistorySwitch() {
-        
         swtchAllHistory.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(swtchAllHistory)
 
         swtchAllHistory.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -5)).isActive = true
         swtchAllHistory.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive = true
         swtchAllHistory.addTarget(self, action: #selector(switchChanged), for: .valueChanged)
-        
         lblAllHistory.text = "Get all history"
         lblAllHistory.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(lblAllHistory)
-
-        
         lblAllHistory.centerYAnchor.constraint(equalTo: swtchAllHistory.centerYAnchor).isActive = true
         lblAllHistory.trailingAnchor.constraint(equalTo: swtchAllHistory.leadingAnchor, constant: widthFromPct(percent: -2)).isActive = true
-        
-        
     }
     private func setupDatePickerLabel() {
         lblDatePicker.text = "Get all history beginning from:"
         lblDatePicker.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(lblDatePicker)
-
         lblDatePicker.topAnchor.constraint(equalTo: vwTopBar.bottomAnchor, constant: heightFromPct(percent: 15)).isActive = true
         lblDatePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
     }
@@ -92,7 +81,6 @@ class ManageAppleHealthVC: TemplateVC {
         datePicker.preferredDatePickerStyle = .wheels
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(datePicker)
-
         datePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         datePicker.topAnchor.constraint(equalTo: lblDatePicker.bottomAnchor, constant: heightFromPct(percent: 2)).isActive = true
     }
@@ -109,15 +97,21 @@ class ManageAppleHealthVC: TemplateVC {
     }
     
     @objc func switchChanged(mySwitch: UISwitch) {
-        let isOn = mySwitch.isOn
-        datePicker.isHidden = isOn
-        lblDatePicker.isHidden = isOn
+        swtchAllHistoryIsOn = mySwitch.isOn
+        datePicker.isHidden = swtchAllHistoryIsOn
+        lblDatePicker.isHidden = swtchAllHistoryIsOn
+        print("swtchAllHistoryIsOn: \(swtchAllHistoryIsOn)")
     }
     
     
     @objc func actionGetStepsData() {
+        if swtchAllHistoryIsOn {
+            dtUserHistory = nil
+        } else {
+            dtUserHistory = datePicker.date
+        }
         self.showSpinner()
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.datePicker.date) { fetcherResult in
+            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.dtUserHistory) { fetcherResult in
                 switch fetcherResult{
                 case let .success(arryStepsDict):
                     print("succesfully collected - arryStepsDict - from healthFetcher class")
@@ -134,7 +128,7 @@ class ManageAppleHealthVC: TemplateVC {
             }
         }
     func actionGetSleepData(){
-            self.appleHealthDataFetcher.fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:.sleepAnalysis, startDate: self.datePicker.date) { fetcherResult in
+            self.appleHealthDataFetcher.fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:.sleepAnalysis, startDate: self.dtUserHistory) { fetcherResult in
                 switch fetcherResult{
                 case let .success(arrySleepDict):
                     print("succesfully collected - arrySleepDict - from healthFetcher class")
@@ -152,7 +146,7 @@ class ManageAppleHealthVC: TemplateVC {
         }
     }
     func actionGetHeartRateData(){
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.datePicker.date) { fetcherResult in
+            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.dtUserHistory) { fetcherResult in
                 switch fetcherResult{
                 case let .success(arryHeartRateDict):
                     print("succesfully collected - arryHeartRateDict - from healthFetcher class")
@@ -174,22 +168,17 @@ class ManageAppleHealthVC: TemplateVC {
         }
     }
     func sendAppleHealthData(arryAppleHealthData: [[String:String]]){
-        self.healthDataStore.callRecieveAppleHealthData(arryAppleHealthData: arryAppleHealthData) { responseResult in
+        self.healthDataStore.sendChunksToWSAPI(arryAppleHealthData: arryAppleHealthData) { responseResult in
             self.removeSpinner()
             switch responseResult{
             case let .success(responseDict):
-                
-                                
                 if let unwp_count_of_user_apple_health_records = responseDict["count_of_user_apple_health_records"]{
                     
                     self.templateAlert(alertTitle: "Success", alertMessage: "Added \(responseDict["count_of_added_records"] ?? "<failed to get count_of_added_records key from response> ") records")
-                    
-                    
                     for obj in self.userStore.arryDataSourceObjects!{
                         if obj.name == "Apple Health Data"{
                             print("** unwp_count_of_entries: \(unwp_count_of_user_apple_health_records)")
                             obj.recordCount = unwp_count_of_user_apple_health_records
-//                            self.userStore.writeDataSourceJson()
                             self.userStore.writeObjectToJsonFile(object: self.userStore.arryDataSourceObjects, filename: "arryDataSourceObjects.json")
                         }
                     }
@@ -198,7 +187,6 @@ class ManageAppleHealthVC: TemplateVC {
                     print("sent to processing")
                     self.templateAlert(alertTitle: "Processing Data", alertMessage:  responseDict["alertMessage"] ?? "<failed to get good message>")
                 }
-                
             case let .failure(error):
                 self.templateAlert(alertMessage: "Failed to upload data. Error: \(error)")
             }

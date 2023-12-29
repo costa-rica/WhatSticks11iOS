@@ -23,7 +23,6 @@ enum HealthDataStoreError: Error {
     }
 }
 
-
 class HealthDataStore {
 //    var user:User!
     var requestStore:RequestStore!
@@ -50,7 +49,7 @@ class HealthDataStore {
             }
             do {
                 if let jsonResult = try JSONSerialization.jsonObject(with: unwrapped_data, options: []) as? [String: String] {
-                    print("*** Success -- if this prints, but UI isn't reflecting then we have big issue ***")
+                    
                     DispatchQueue.main.async {
                         completion(.success(jsonResult))
                     }
@@ -110,6 +109,45 @@ class HealthDataStore {
         }
         task.resume()
     }
+}
+
+extension HealthDataStore {
     
-    
+    func sendChunksToWSAPI(arryAppleHealthData: [[String: String]], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let totalChunks = arryAppleHealthData.count / chunkSize + (arryAppleHealthData.count % chunkSize == 0 ? 0 : 1)
+        var currentChunkIndex = 0
+        var totalAddedRecords = 0
+        var finalResponse: [String: String] = [:]
+
+        func sendNextChunk() {
+            guard currentChunkIndex < totalChunks else {
+                finalResponse["count_of_added_records"] = String(totalAddedRecords)
+                completion(.success(finalResponse))
+                return
+            }
+
+            let start = currentChunkIndex * chunkSize
+            let end = start + chunkSize
+            let chunk = Array(arryAppleHealthData[start..<min(end, arryAppleHealthData.count)])
+            currentChunkIndex += 1
+
+            callRecieveAppleHealthData(arryAppleHealthData: chunk) { result in
+                switch result {
+                case .success(let response):
+                    if let addedCountStr = response["count_of_added_records"], let addedCount = Int(addedCountStr) {
+                        totalAddedRecords += addedCount
+                    }
+                    if let userAppleHealthCount = response["count_of_user_apple_health_records"] {
+                        finalResponse["count_of_user_apple_health_records"] = userAppleHealthCount
+                    }
+                    sendNextChunk()
+
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+
+        sendNextChunk()
+    }
 }

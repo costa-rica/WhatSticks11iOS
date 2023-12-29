@@ -142,7 +142,7 @@ class TemplateVC: UIViewController {
         activityIndicator.startAnimating()
         spinnerView?.addSubview(activityIndicator)
         messageLabel.text = "This is a lot of data so it may take more than a minute"
-        messageLabel.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+//        messageLabel.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         messageLabel.numberOfLines = 0
         messageLabel.lineBreakMode = .byWordWrapping
         messageLabel.textColor = .white
@@ -154,9 +154,9 @@ class TemplateVC: UIViewController {
         spinnerView?.accessibilityIdentifier = "spinnerView"
         activityIndicator.accessibilityIdentifier = "activityIndicator"
         // Timer to show the label after 3 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
-            self.messageLabel.isHidden = false
-        }
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
+//            self.messageLabel.isHidden = false
+//        }
     }
     func removeSpinner() {
         spinnerView?.removeFromSuperview()
