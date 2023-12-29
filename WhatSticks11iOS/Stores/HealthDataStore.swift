@@ -27,8 +27,14 @@ class HealthDataStore {
 //    var user:User!
     var requestStore:RequestStore!
     
-    func callRecieveAppleHealthData(arryAppleHealthData:[[String:String]], completion: @escaping (Result<[String: String], Error>) -> Void) {
+//    func callRecieveAppleHealthData(arryAppleHealthData:[[String:String]], completion: @escaping (Result<[String: String], Error>) -> Void) {
+    func callRecieveAppleHealthData(filename: String, lastChunk: String, arryAppleHealthData: [[String: String]], completion: @escaping (Result<[String: String], Error>) -> Void) {
         print("- in callRecieveAppleHealthData")
+        let requestBody: [String: Any] = [
+            "filename": filename,
+            "last_chunk": lastChunk,
+            "arryAppleHealthData": arryAppleHealthData
+        ]
         let request = requestStore.createRequestWithTokenAndBody(endPoint: .receive_apple_health_data, body: arryAppleHealthData)
         let task = requestStore.session.dataTask(with: request) { data, response, error in
             // Handle potential error from the data task
@@ -113,13 +119,18 @@ class HealthDataStore {
 
 extension HealthDataStore {
     
-    func sendChunksToWSAPI(arryAppleHealthData: [[String: String]], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
+//    func sendChunksToWSAPI(arryAppleHealthData: [[String: String]], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
+    func sendChunksToWSAPI(userId: String, arryAppleHealthData: [[String: String]], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short).replacingOccurrences(of: "/", with: "").replacingOccurrences(of: ",", with: "").replacingOccurrences(of: " ", with: "")
+        let filename = "AppleHealthQuantityCategory-user_id\(userId)-\(timestamp).json"
+
         let totalChunks = arryAppleHealthData.count / chunkSize + (arryAppleHealthData.count % chunkSize == 0 ? 0 : 1)
         var currentChunkIndex = 0
         var totalAddedRecords = 0
         var finalResponse: [String: String] = [:]
 
         func sendNextChunk() {
+
             guard currentChunkIndex < totalChunks else {
                 finalResponse["count_of_added_records"] = String(totalAddedRecords)
                 completion(.success(finalResponse))
@@ -130,8 +141,9 @@ extension HealthDataStore {
             let end = start + chunkSize
             let chunk = Array(arryAppleHealthData[start..<min(end, arryAppleHealthData.count)])
             currentChunkIndex += 1
-
-            callRecieveAppleHealthData(arryAppleHealthData: chunk) { result in
+            let lastChunk = currentChunkIndex >= totalChunks ? "True" : "False"
+            callRecieveAppleHealthData(filename: filename, lastChunk: lastChunk, arryAppleHealthData: chunk) { result in
+//            callRecieveAppleHealthData(arryAppleHealthData: chunk) { result in
                 switch result {
                 case .success(let response):
                     if let addedCountStr = response["count_of_added_records"], let addedCount = Int(addedCountStr) {
