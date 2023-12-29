@@ -28,14 +28,18 @@ class HealthDataStore {
     var requestStore:RequestStore!
     
 //    func callRecieveAppleHealthData(arryAppleHealthData:[[String:String]], completion: @escaping (Result<[String: String], Error>) -> Void) {
-    func callRecieveAppleHealthData(filename: String, lastChunk: String, arryAppleHealthData: [[String: String]], completion: @escaping (Result<[String: String], Error>) -> Void) {
+    func callRecieveAppleHealthData(filename: String, lastChunk: String, arryAppleHealthData: [AppleHealthQuantityCategory], completion: @escaping (Result<[String: String], Error>) -> Void) {
         print("- in callRecieveAppleHealthData")
-        let requestBody: [String: Any] = [
-            "filename": filename,
-            "last_chunk": lastChunk,
-            "arryAppleHealthData": arryAppleHealthData
-        ]
-        let request = requestStore.createRequestWithTokenAndBody(endPoint: .receive_apple_health_data, body: arryAppleHealthData)
+//        let requestBody: [String: Any] = [
+//            "filename": filename,
+//            "last_chunk": lastChunk,
+//            "arryAppleHealthData": arryAppleHealthData
+//        ]
+        var receiveAppleHealthObject = RecieveAppleHealthObject()
+        receiveAppleHealthObject.filename = filename
+        receiveAppleHealthObject.last_chunk = lastChunk
+        receiveAppleHealthObject.arryAppleHealthQuantityCategory = arryAppleHealthData
+        let request = requestStore.createRequestWithTokenAndBody(endPoint: .receive_apple_health_data, body: receiveAppleHealthObject)
         let task = requestStore.session.dataTask(with: request) { data, response, error in
             // Handle potential error from the data task
             if let error = error {
@@ -120,7 +124,7 @@ class HealthDataStore {
 extension HealthDataStore {
     
 //    func sendChunksToWSAPI(arryAppleHealthData: [[String: String]], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
-    func sendChunksToWSAPI(userId: String, arryAppleHealthData: [[String: String]], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
+    func sendChunksToWSAPI(userId: String, arryAppleHealthData: [AppleHealthQuantityCategory], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
         let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short).replacingOccurrences(of: "/", with: "").replacingOccurrences(of: ",", with: "").replacingOccurrences(of: " ", with: "")
         let filename = "AppleHealthQuantityCategory-user_id\(userId)-\(timestamp).json"
 

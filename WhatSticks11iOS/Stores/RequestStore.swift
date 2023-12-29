@@ -86,7 +86,7 @@ class RequestStore {
         
         
         let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
+//        encoder.keyEncodingStrategy = .convertToSnakeCase
         do {
             let jsonData = try encoder.encode(body)
             request.httpBody = jsonData

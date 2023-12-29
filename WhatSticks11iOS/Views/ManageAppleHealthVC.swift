@@ -24,19 +24,19 @@ class ManageAppleHealthVC: TemplateVC {
     var dtUserHistory:Date?
     let btnGetData = UIButton()
     let btnDeleteData = UIButton()
-    var arryStepsDict = [[String:String]](){
+    var arryStepsDict = [AppleHealthQuantityCategory](){
         didSet{
             print("- in arryStepsDict didSet")
             actionGetSleepData()
         }
     }
-    var arrySleepDict = [[String:String]](){
+    var arrySleepDict = [AppleHealthQuantityCategory](){
         didSet{
             print("- in arrySleepDict didSet")
             actionGetHeartRateData()
         }
     }
-    var arryHeartRateDict = [[String:String]](){
+    var arryHeartRateDict = [AppleHealthQuantityCategory](){
         didSet{
             print("- in arryHeartRateDict didSet")
             necessaryDataCollected()
@@ -167,8 +167,11 @@ class ManageAppleHealthVC: TemplateVC {
             self.templateAlert(alertMessage: "No records found to add. Check dates.")
         }
     }
-    func sendAppleHealthData(arryAppleHealthData: [[String:String]]){
-        self.healthDataStore.sendChunksToWSAPI(arryAppleHealthData: arryAppleHealthData) { responseResult in
+    func sendAppleHealthData(arryAppleHealthData: [AppleHealthQuantityCategory]){
+        guard let user_id = userStore.user.id else {
+            self.templateAlert(alertMessage: "No user id. check ManageAppleHealthVC sendAppleHealthData.")
+            return}
+        self.healthDataStore.sendChunksToWSAPI(userId:user_id ,arryAppleHealthData: arryAppleHealthData) { responseResult in
             self.removeSpinner()
             switch responseResult{
             case let .success(responseDict):

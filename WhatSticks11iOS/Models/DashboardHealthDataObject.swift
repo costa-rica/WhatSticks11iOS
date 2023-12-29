@@ -29,3 +29,23 @@ class IndepVarObject:Codable{
     var definition:String?
     var noun:String?
 }
+
+class RecieveAppleHealthObject:Codable{
+    var filename:String?
+    var last_chunk:String?
+    var arryAppleHealthQuantityCategory:[AppleHealthQuantityCategory]?
+}
+
+class AppleHealthQuantityCategory:Codable{
+    var sampleType:String?
+    var startDate:String?
+    var endDate:String?
+    var value:String?
+    var metadata:String?
+    var sourceName:String?
+    var sourceVersion:String?
+    var sourceProductType:String?
+    var device:String?
+    var UUID:String?
+    var quantity:String?
+}
