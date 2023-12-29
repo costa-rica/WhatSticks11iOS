@@ -123,10 +123,15 @@ class HealthDataStore {
 
 extension HealthDataStore {
     
-//    func sendChunksToWSAPI(arryAppleHealthData: [[String: String]], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
     func sendChunksToWSAPI(userId: String, arryAppleHealthData: [AppleHealthQuantityCategory], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
-        let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short).replacingOccurrences(of: "/", with: "").replacingOccurrences(of: ",", with: "").replacingOccurrences(of: " ", with: "")
-        let filename = "AppleHealthQuantityCategory-user_id\(userId)-\(timestamp).json"
+
+        let currentDate = Date()
+        let dateFormatter = DateFormatter()
+        // Set the date format
+        dateFormatter.dateFormat = "yyyyMMdd-HHmm"
+        // Get the date string
+        let dateString = dateFormatter.string(from: currentDate)
+        let filename = "AppleHealthQuantityCategory-user_id\(userId)-\(dateString).json"
 
         let totalChunks = arryAppleHealthData.count / chunkSize + (arryAppleHealthData.count % chunkSize == 0 ? 0 : 1)
         var currentChunkIndex = 0
@@ -147,7 +152,6 @@ extension HealthDataStore {
             currentChunkIndex += 1
             let lastChunk = currentChunkIndex >= totalChunks ? "True" : "False"
             callRecieveAppleHealthData(filename: filename, lastChunk: lastChunk, arryAppleHealthData: chunk) { result in
-//            callRecieveAppleHealthData(arryAppleHealthData: chunk) { result in
                 switch result {
                 case .success(let response):
                     if let addedCountStr = response["count_of_added_records"], let addedCount = Int(addedCountStr) {
