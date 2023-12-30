@@ -35,13 +35,7 @@ class RequestStore {
         self.fileManager = FileManager.default
         self.documentsURL = self.fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         self.urlStore=URLStore()
-        
-        self.urlStore.apiBase = APIBase.dev
-//        #if targetEnvironment(simulator)
-//        self.urlStore.apiBase = APIBase.local
-//        #else
-//        self.urlStore.apiBase = APIBase.prod
-//        #endif
+        self.urlStore.apiBase = APIBase.prod
     }
     
     func createRequestLogin(email:String, password:String)->Result<URLRequest,Error>{
@@ -71,22 +65,15 @@ class RequestStore {
         return request
     }
     
-    // This was an old function but because json encoding can handle [String:String] and [[String:String]] the same, we modified the code to this
-    // old function: createRequestWithTokenAndBody(endPoint: EndPoint, dict_body:[String:String])->URLRequest
     func createRequestWithTokenAndBody<T: Encodable>(endPoint: EndPoint, body: T) -> URLRequest {
         print("- createRequestWithTokenAndBody")
         let url = urlStore.callEndpoint(endPoint: endPoint)
         var request = URLRequest(url: url)
-        //        request.httpMethod = "POST"
-        //        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
         request.addValue("application/json",forHTTPHeaderField: "Content-Type")
         request.addValue("application/json",forHTTPHeaderField: "Accept")
         request.setValue(self.token, forHTTPHeaderField: "x-access-token")
-        
-        
         let encoder = JSONEncoder()
-//        encoder.keyEncodingStrategy = .convertToSnakeCase
         do {
             let jsonData = try encoder.encode(body)
             request.httpBody = jsonData
@@ -94,7 +81,6 @@ class RequestStore {
             print("Failed to encode body: \(error)")
         }
         print("built request: \(request)")
-        print("request body: \(request.httpBody)")
         return request
     }
     
