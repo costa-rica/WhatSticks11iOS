@@ -124,7 +124,7 @@ class HealthDataStore {
 extension HealthDataStore {
     
     func sendChunksToWSAPI(userId: String, arryAppleHealthData: [AppleHealthQuantityCategory], chunkSize: Int = 200000, completion: @escaping (Result<[String: String], Error>) -> Void) {
-
+        print("- accessed HealthDataStore.sendChunksToWSAPI")
         let currentDate = Date()
         let dateFormatter = DateFormatter()
         // Set the date format
@@ -139,9 +139,10 @@ extension HealthDataStore {
         var finalResponse: [String: String] = [:]
 
         func sendNextChunk() {
-
+            print("sendNextChunk ")
             guard currentChunkIndex < totalChunks else {
-                finalResponse["count_of_added_records"] = String(totalAddedRecords)
+//                finalResponse["count_of_added_records"] = String(totalAddedRecords)
+                print("final response: \(finalResponse)")
                 completion(.success(finalResponse))
                 return
             }
@@ -154,6 +155,8 @@ extension HealthDataStore {
             callRecieveAppleHealthData(filename: filename, lastChunk: lastChunk, arryAppleHealthData: chunk) { result in
                 switch result {
                 case .success(let response):
+                    finalResponse = response
+                    // MARK: Need to adapt to a different response The response should just be continue
                     if let addedCountStr = response["count_of_added_records"], let addedCount = Int(addedCountStr) {
                         totalAddedRecords += addedCount
                     }
@@ -161,6 +164,9 @@ extension HealthDataStore {
                         finalResponse["count_of_user_apple_health_records"] = userAppleHealthCount
                     }
                     sendNextChunk()
+//                    if let keep_going = response["chunk_response"]{
+//                        sendNextChunk()
+//                    }
 
                 case .failure(let error):
                     completion(.failure(error))

@@ -26,19 +26,19 @@ class ManageAppleHealthVC: TemplateVC {
     let btnDeleteData = UIButton()
     var arryStepsDict = [AppleHealthQuantityCategory](){
         didSet{
-            print("- in arryStepsDict didSet")
+//            print("- in arryStepsDict didSet")
             actionGetSleepData()
         }
     }
     var arrySleepDict = [AppleHealthQuantityCategory](){
         didSet{
-            print("- in arrySleepDict didSet")
+//            print("- in arrySleepDict didSet")
             actionGetHeartRateData()
         }
     }
     var arryHeartRateDict = [AppleHealthQuantityCategory](){
         didSet{
-            print("- in arryHeartRateDict didSet")
+//            print("- in arryHeartRateDict didSet")
             necessaryDataCollected()
         }
     }
@@ -168,6 +168,7 @@ class ManageAppleHealthVC: TemplateVC {
         }
     }
     func sendAppleHealthData(arryAppleHealthData: [AppleHealthQuantityCategory]){
+        print("- in sendAppleHealthData")
         guard let user_id = userStore.user.id else {
             self.templateAlert(alertMessage: "No user id. check ManageAppleHealthVC sendAppleHealthData.")
             return}
@@ -188,6 +189,9 @@ class ManageAppleHealthVC: TemplateVC {
                 }
                 else{
                     print("sent to processing")
+                    print("responseDict:::: ")
+                    print(responseDict)
+                    print("-------------------")
                     self.templateAlert(alertTitle: "Processing Data", alertMessage:  responseDict["alertMessage"] ?? "<failed to get good message>")
                 }
             case let .failure(error):

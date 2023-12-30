@@ -47,7 +47,7 @@ class AppleHealthDataFetcher {
     
     
     func fetchStepsAndOtherQuantityType(quantityTypeIdentifier: HKQuantityTypeIdentifier, startDate: Date? = nil, completion: @escaping (Result<[AppleHealthQuantityCategory], Error>) -> Void) {
-        print("- accessed fetchStepsAndOtherQuantityType, fetching \(quantityTypeIdentifier.rawValue) ")
+//        print("- accessed fetchStepsAndOtherQuantityType, fetching \(quantityTypeIdentifier.rawValue) ")
         
         var stepsEntries = [AppleHealthQuantityCategory]() // Array of AppleHealthQuantityCategory
         // Assuming endDate is the current date
@@ -97,7 +97,7 @@ class AppleHealthDataFetcher {
                     }
                 }
                 completion(.success(stepsEntries))
-                print("fetchStepsAndOtherQuantityType finished::: \(quantityTypeIdentifier.rawValue) count: \(stepsEntries.count)")
+//                print("fetchStepsAndOtherQuantityType finished::: \(quantityTypeIdentifier.rawValue) count: \(stepsEntries.count)")
             }
         }
         healthStore.execute(query)
@@ -105,7 +105,7 @@ class AppleHealthDataFetcher {
 
     
     func fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier: HKCategoryTypeIdentifier, startDate: Date? = nil, completion: @escaping (Result<[AppleHealthQuantityCategory], Error>) -> Void) {
-        print("- accessed fetchSleepDataAndOtherCategoryType, fetching \(categoryTypeIdentifier.rawValue)")
+//        print("- accessed fetchSleepDataAndOtherCategoryType, fetching \(categoryTypeIdentifier.rawValue)")
         
         var sleepEntries = [AppleHealthQuantityCategory]() // Array of AppleHealthQuantityCategory
         // Assuming endDate is the current date
@@ -148,7 +148,7 @@ class AppleHealthDataFetcher {
                     }
                 }
                 completion(.success(sleepEntries))
-                print("fetchSleepDataAndOtherCategoryType finished:::: \(categoryTypeIdentifier.rawValue) count: \(sleepEntries.count)")
+//                print("fetchSleepDataAndOtherCategoryType finished:::: \(categoryTypeIdentifier.rawValue) count: \(sleepEntries.count)")
             }
         }
         healthStore.execute(query)

@@ -60,9 +60,12 @@ class UserStore {
                 completion(.failure(UserStoreError.failedToRecieveServerResponse))
                 return
             }
+            print("about to serialize")
             do {
                 if let jsonResult = try JSONSerialization.jsonObject(with: unwrappedData, options: []) as? [String: Any] {
+                    print("json serialized well")
                     if let id = jsonResult["id"] as? String {
+                        print("json serialized well - doing better")
                         OperationQueue.main.addOperation {
                             completion(.success(["id": id]))
                         }

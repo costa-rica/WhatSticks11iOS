@@ -94,6 +94,7 @@ class RequestStore {
             print("Failed to encode body: \(error)")
         }
         print("built request: \(request)")
+        print("request body: \(request.httpBody)")
         return request
     }
     
