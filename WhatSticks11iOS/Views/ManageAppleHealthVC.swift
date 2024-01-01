@@ -9,13 +9,12 @@ import UIKit
 import HealthKit
 
 class ManageAppleHealthVC: TemplateVC {
-
+    
     var userStore: UserStore!
     var requestStore: RequestStore!
     var appleHealthDataFetcher:AppleHealthDataFetcher!
     var healthDataStore: HealthDataStore!
     var criticalDataFlag=true
-    
     let datePicker = UIDatePicker()
     let lblDatePicker = UILabel()
     let lblAllHistory = UILabel()
@@ -26,23 +25,32 @@ class ManageAppleHealthVC: TemplateVC {
     let btnDeleteData = UIButton()
     var arryStepsDict = [AppleHealthQuantityCategory](){
         didSet{
-//            print("- in arryStepsDict didSet")
             actionGetSleepData()
         }
     }
     var arrySleepDict = [AppleHealthQuantityCategory](){
         didSet{
-//            print("- in arrySleepDict didSet")
             actionGetHeartRateData()
         }
     }
     var arryHeartRateDict = [AppleHealthQuantityCategory](){
         didSet{
-//            print("- in arryHeartRateDict didSet")
-            necessaryDataCollected()
+            actionGetExerciseTimeData()
         }
     }
-
+    var arryExerciseTimeDict = [AppleHealthQuantityCategory](){
+        didSet{
+            //            necessaryDataCollected()
+            actionGetWorkoutData()
+        }
+    }
+    var arryWorkoutDict = [AppleHealthWorkout](){
+        didSet{
+//            necessaryDataCollected()
+            sendAppleWorkouts()
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupIsDev(urlStore: requestStore.urlStore)
@@ -56,10 +64,179 @@ class ManageAppleHealthVC: TemplateVC {
         setup_btnDeleteData()
         self.setScreenNameFontSize()
     }
+    
+    
+}
+
+/* Sending Apple Health Data */
+extension ManageAppleHealthVC{
+    @objc func actionGetStepsData() {
+        if swtchAllHistoryIsOn {
+            dtUserHistory = nil
+        } else {
+            dtUserHistory = datePicker.date
+        }
+        self.showSpinner()
+        self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.dtUserHistory) { fetcherResult in
+            switch fetcherResult{
+            case let .success(arryStepsDict):
+                print("succesfully collected - arryStepsDict - from healthFetcher class")
+                self.arryStepsDict = arryStepsDict
+                if arryStepsDict.count == 0 {
+                    self.templateAlert(alertMessage: "Either you did not allow permissions of there is no STEPS data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
+                    self.removeSpinner()
+                }
+            case let .failure(error):
+                self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without steps data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
+                print("There was an error getting steps: \(error)")
+                self.removeSpinner()
+            }
+        }
+    }
+    func actionGetSleepData(){
+        self.appleHealthDataFetcher.fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:.sleepAnalysis, startDate: self.dtUserHistory) { fetcherResult in
+            switch fetcherResult{
+            case let .success(arrySleepDict):
+                print("succesfully collected - arrySleepDict - from healthFetcher class")
+                self.arrySleepDict = arrySleepDict
+                if arrySleepDict.count == 0 {
+                    self.templateAlert(alertMessage: "Either you did not allow permissions of there is no SLEEP data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
+                    self.removeSpinner()
+                }
+            case let .failure(error):
+                self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without sleep data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
+                print("There was an error getting sleep: \(error)")
+                self.removeSpinner()
+                
+            }
+        }
+    }
+    func actionGetHeartRateData(){
+        self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.dtUserHistory) { fetcherResult in
+            switch fetcherResult{
+            case let .success(arryHeartRateDict):
+                print("succesfully collected - arryHeartRateDict - from healthFetcher class")
+                self.arryHeartRateDict = arryHeartRateDict
+            case let .failure(error):
+                print("There was an error getting heart rate: \(error)")
+                self.removeSpinner()
+            }
+        }
+    }
+    func actionGetExerciseTimeData(){
+        self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .appleExerciseTime, startDate: self.dtUserHistory) { fetcherResult in
+            switch fetcherResult{
+            case let .success(arryExerciseTimeDict):
+                print("succesfully collected - arryExerciseTimeDict - from healthFetcher class")
+                self.arryExerciseTimeDict = arryExerciseTimeDict
+            case let .failure(error):
+                print("There was an error getting heart rate: \(error)")
+                self.removeSpinner()
+            }
+        }
+    }
+    func actionGetWorkoutData(){
+        self.appleHealthDataFetcher.fetchWorkoutData( startDate: self.dtUserHistory) { fetcherResult in
+            switch fetcherResult{
+            case let .success(arryWorkoutDict):
+                print("succesfully collected - arryWorkoutDict - from healthFetcher class")
+                self.arryWorkoutDict = arryWorkoutDict
+            case let .failure(error):
+                print("There was an error getting heart rate: \(error)")
+                self.removeSpinner()
+            }
+        }
+    }
+    
+//    func necessaryDataCollected(){
+//        let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
+//        if all_data_count > 0{
+//            print("sending (arrySleepDict + arryStepsDict + arryHeartRateDict): \(String(all_data_count)) records")
+//            self.sendAppleHealthData(arryAppleHealthData: arrySleepDict + arryStepsDict + arryHeartRateDict)
+//        }
+//        else{
+//            self.templateAlert(alertMessage: "No records found to add. Check dates.")
+//        }
+//    }
+    func sendAppleWorkouts(){
+        
+        print("- in sendAppleWorkouts")
+        let dateStringTimeStamp = timeStampsForFileNames()
+        // dateStringTimeStamp --> important for file name used by WSAPI/WSAS
+        guard let user_id = userStore.user.id else {
+            self.templateAlert(alertMessage: "No user id. check ManageAppleHealthVC sendAppleHealthData.")
+            return}
+        if arryWorkoutDict.count > 0 {
+            
+            // Call self.healthDataStore.callReceiveAppleWorkoutsData
+            self.healthDataStore.callReceiveAppleWorkoutsData(userId: user_id,dateStringTimeStamp:dateStringTimeStamp, arryAppleWorkouts: arryWorkoutDict) { resultResponse in
+                switch resultResponse{
+                case .success(_):
+                    self.sendAppleHealthData(userMessage:"updated apple workouts", dateStringTimeStamp:dateStringTimeStamp)
+                case .failure(_):
+                    self.removeSpinner()
+                    self.templateAlert(alertMessage: "Failed to send workouts properly")
+//                    self.sendAppleHealthData(userMessage:"failed to update apple workouts", dateStringTimeStamp:dateStringTimeStamp)
+                }
+            }
+        } 
+//        else{
+//            sendAppleHealthData(userMessage:"No records found to add. Check dates.", dateStringTimeStamp:dateStringTimeStamp)
+//        }
+        
+
+    }
+    func sendAppleHealthData(userMessage:String, dateStringTimeStamp:String){
+        print("- in sendAppleHealthData")
+        guard let user_id = userStore.user.id else {
+            self.templateAlert(alertMessage: "No user id. check ManageAppleHealthVC sendAppleHealthData.")
+            return}
+        let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
+        if all_data_count > 0{
+            let arryAppleHealthData = arrySleepDict + arryStepsDict + arryHeartRateDict
+            
+            /* Send apple works outs first */
+            self.healthDataStore.sendChunksToWSAPI(userId:user_id,dateStringTimeStamp:dateStringTimeStamp ,arryAppleHealthData: arryAppleHealthData) { responseResult in
+                self.removeSpinner()
+                switch responseResult{
+                case let .success(responseDict):
+                    if let unwp_count_of_user_apple_health_records = responseDict["count_of_user_apple_health_records"]{
+                        
+                        self.templateAlert(alertTitle: "Success", alertMessage: "Added \(responseDict["count_of_added_records"] ?? "<failed to get count_of_added_records key from response> ") records")
+                        for obj in self.userStore.arryDataSourceObjects!{
+                            if obj.name == "Apple Health Data"{
+                                print("** unwp_count_of_entries: \(unwp_count_of_user_apple_health_records)")
+                                obj.recordCount = unwp_count_of_user_apple_health_records
+                                self.userStore.writeObjectToJsonFile(object: self.userStore.arryDataSourceObjects, filename: "arryDataSourceObjects.json")
+                            }
+                        }
+                    }
+                    else{
+                        print("sent to processing")
+                        print("responseDict:::: ")
+                        print(responseDict)
+                        print("-------------------")
+                        self.templateAlert(alertTitle: "Processing Data", alertMessage:  responseDict["alertMessage"] ?? "<failed to get good message>")
+                    }
+                case let .failure(error):
+                    self.templateAlert(alertMessage: "Failed to upload data. Error: \(error)")
+                }
+            }
+            
+        } else{
+            if userMessage == "No records found to add. Check dates."{
+                self.templateAlert(alertMessage: "No records found to add. Check dates.")
+            }
+        }
+        
+    }
+}
+
+/* Delete and other basic methods*/
+extension ManageAppleHealthVC{
     private func setupAllHistorySwitch() {
         swtchAllHistory.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(swtchAllHistory)
-
         swtchAllHistory.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -5)).isActive = true
         swtchAllHistory.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive = true
         swtchAllHistory.addTarget(self, action: #selector(switchChanged), for: .valueChanged)
@@ -95,112 +272,12 @@ class ManageAppleHealthVC: TemplateVC {
         btnGetData.layer.cornerRadius = 10
         btnGetData.setTitle(" Add Data ", for: .normal)
     }
-    
     @objc func switchChanged(mySwitch: UISwitch) {
         swtchAllHistoryIsOn = mySwitch.isOn
         datePicker.isHidden = swtchAllHistoryIsOn
         lblDatePicker.isHidden = swtchAllHistoryIsOn
         print("swtchAllHistoryIsOn: \(swtchAllHistoryIsOn)")
     }
-    
-    
-    @objc func actionGetStepsData() {
-        if swtchAllHistoryIsOn {
-            dtUserHistory = nil
-        } else {
-            dtUserHistory = datePicker.date
-        }
-        self.showSpinner()
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .stepCount, startDate: self.dtUserHistory) { fetcherResult in
-                switch fetcherResult{
-                case let .success(arryStepsDict):
-                    print("succesfully collected - arryStepsDict - from healthFetcher class")
-                    self.arryStepsDict = arryStepsDict
-                    if arryStepsDict.count == 0 {
-                        self.templateAlert(alertMessage: "Either you did not allow permissions of there is no STEPS data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
-                        self.removeSpinner()
-                    }
-                case let .failure(error):
-                    self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without steps data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
-                    print("There was an error getting steps: \(error)")
-                    self.removeSpinner()
-                }
-            }
-        }
-    func actionGetSleepData(){
-            self.appleHealthDataFetcher.fetchSleepDataAndOtherCategoryType(categoryTypeIdentifier:.sleepAnalysis, startDate: self.dtUserHistory) { fetcherResult in
-                switch fetcherResult{
-                case let .success(arrySleepDict):
-                    print("succesfully collected - arrySleepDict - from healthFetcher class")
-                    self.arrySleepDict = arrySleepDict
-                    if arrySleepDict.count == 0 {
-                        self.templateAlert(alertMessage: "Either you did not allow permissions of there is no SLEEP data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
-                        self.removeSpinner()
-                    }
-                case let .failure(error):
-                    self.templateAlert(alertTitle: "Alert", alertMessage: "This app will not function correctly without sleep data. Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access")
-                    print("There was an error getting sleep: \(error)")
-                    self.removeSpinner()
-                
-            }
-        }
-    }
-    func actionGetHeartRateData(){
-            self.appleHealthDataFetcher.fetchStepsAndOtherQuantityType(quantityTypeIdentifier: .heartRate, startDate: self.dtUserHistory) { fetcherResult in
-                switch fetcherResult{
-                case let .success(arryHeartRateDict):
-                    print("succesfully collected - arryHeartRateDict - from healthFetcher class")
-                    self.arryHeartRateDict = arryHeartRateDict
-                case let .failure(error):
-                    print("There was an error getting heart rate: \(error)")
-                    self.removeSpinner()
-            }
-            }
-    }
-    func necessaryDataCollected(){
-        let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
-        if all_data_count > 0{
-            print("sending (arrySleepDict + arryStepsDict + arryHeartRateDict): \(String(all_data_count)) records")
-            self.sendAppleHealthData(arryAppleHealthData: arrySleepDict + arryStepsDict + arryHeartRateDict)
-        }
-        else{
-            self.templateAlert(alertMessage: "No records found to add. Check dates.")
-        }
-    }
-    func sendAppleHealthData(arryAppleHealthData: [AppleHealthQuantityCategory]){
-        print("- in sendAppleHealthData")
-        guard let user_id = userStore.user.id else {
-            self.templateAlert(alertMessage: "No user id. check ManageAppleHealthVC sendAppleHealthData.")
-            return}
-        self.healthDataStore.sendChunksToWSAPI(userId:user_id ,arryAppleHealthData: arryAppleHealthData) { responseResult in
-            self.removeSpinner()
-            switch responseResult{
-            case let .success(responseDict):
-                if let unwp_count_of_user_apple_health_records = responseDict["count_of_user_apple_health_records"]{
-                    
-                    self.templateAlert(alertTitle: "Success", alertMessage: "Added \(responseDict["count_of_added_records"] ?? "<failed to get count_of_added_records key from response> ") records")
-                    for obj in self.userStore.arryDataSourceObjects!{
-                        if obj.name == "Apple Health Data"{
-                            print("** unwp_count_of_entries: \(unwp_count_of_user_apple_health_records)")
-                            obj.recordCount = unwp_count_of_user_apple_health_records
-                            self.userStore.writeObjectToJsonFile(object: self.userStore.arryDataSourceObjects, filename: "arryDataSourceObjects.json")
-                        }
-                    }
-                }
-                else{
-                    print("sent to processing")
-                    print("responseDict:::: ")
-                    print(responseDict)
-                    print("-------------------")
-                    self.templateAlert(alertTitle: "Processing Data", alertMessage:  responseDict["alertMessage"] ?? "<failed to get good message>")
-                }
-            case let .failure(error):
-                self.templateAlert(alertMessage: "Failed to upload data. Error: \(error)")
-            }
-        }
-    }
-    
-    
     private func setup_btnDeleteData() {
         btnDeleteData.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(btnDeleteData)
@@ -237,7 +314,7 @@ class ManageAppleHealthVC: TemplateVC {
                     for obj in unwp_arryDashHealthDataObj{
                         if obj.name == "Apple Health Data"{
                             obj.recordCount = "0"
-//                            self.userStore.writeDataSourceJson()
+                            //                            self.userStore.writeDataSourceJson()
                             self.userStore.writeObjectToJsonFile(object: self.userStore.arryDataSourceObjects, filename: "arryDataSourceObjects.json")
                         }
                     }
@@ -245,7 +322,7 @@ class ManageAppleHealthVC: TemplateVC {
                 self.userStore.deleteJsonFile(filename: "arryDashboardTableObjects.json")
                 if let _ = self.userStore.arryDashboardTableObjects{
                     self.userStore.arryDashboardTableObjects!.removeAll { $0.sourceDataOfDepVar=="Apple Health Data" }
-
+                    
                 }
                 
                 self.removeSpinner()
@@ -256,6 +333,4 @@ class ManageAppleHealthVC: TemplateVC {
             }
         }
     }
-    
 }
-

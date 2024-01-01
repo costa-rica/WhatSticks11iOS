@@ -103,3 +103,12 @@ extension UIColor {
 }
 
 
+func timeStampsForFileNames() -> String {
+    let currentDate = Date()
+    let dateFormatter = DateFormatter()
+    // Set the date format
+    dateFormatter.dateFormat = "yyyyMMdd-HHmm"
+    // Get the date string
+    let dateString = dateFormatter.string(from: currentDate)
+    return dateString
+}

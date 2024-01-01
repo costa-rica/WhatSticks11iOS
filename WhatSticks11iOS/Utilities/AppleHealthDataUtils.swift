@@ -34,7 +34,9 @@ class AppleHealthDataFetcher {
         let sampleTypesToRead = Set([
             HKObjectType.quantityType(forIdentifier: .heartRate)!,
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
-            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
+            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,        
+            HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!,
+            HKObjectType.workoutType() // Add this lin
         ])
         
         healthStore.requestAuthorization(toShare: nil, read: sampleTypesToRead) { (success, error) in
@@ -154,5 +156,48 @@ class AppleHealthDataFetcher {
         healthStore.execute(query)
     }
 
-    
+    func fetchWorkoutData(startDate: Date? = nil, completion: @escaping (Result<[AppleHealthWorkout], Error>) -> Void) {
+        print("- accessed fetchWorkoutData")
+        
+        var workoutEntries = [AppleHealthWorkout]()
+        let endDate = Date()
+        let workoutType = HKObjectType.workoutType()
+        
+        let predicate: NSPredicate
+        if let startDate = startDate {
+            predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        } else {
+            predicate = HKQuery.predicateForSamples(withStart: nil, end: endDate, options: .strictEndDate)
+        }
+
+        let query = HKSampleQuery(sampleType: workoutType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
+            DispatchQueue.main.async{
+                if let error = error{
+                    print("Error making query: \(error.localizedDescription)")
+                    completion(.failure(error))
+                    return
+                }
+                samples?.forEach { sample in
+                    if let workout = sample as? HKWorkout {
+                        var entry = AppleHealthWorkout()
+                        entry.sampleType = workout.workoutActivityType.rawValue.description
+                        entry.startDate = workout.startDate.description
+                        entry.endDate = workout.endDate.description
+                        entry.duration = String(workout.duration / 60) // duration in minutes
+                        entry.totalEnergyBurned = workout.totalEnergyBurned?.doubleValue(for: .kilocalorie()).description ?? "N/A"
+                        entry.totalDistance = workout.totalDistance?.doubleValue(for: .meter()).description ?? "N/A"
+                        entry.sourceName = workout.sourceRevision.source.name
+                        entry.sourceVersion = workout.sourceRevision.version ?? "Unknown"
+                        entry.device = workout.device?.name ?? "Unknown Device"
+                        entry.UUID = workout.uuid.uuidString
+                        workoutEntries.append(entry)
+                    }
+                }
+                completion(.success(workoutEntries))
+                print("fetchWorkoutData finished count: \(workoutEntries.count)")
+            }
+        }
+        healthStore.execute(query)
+    }
+
 }

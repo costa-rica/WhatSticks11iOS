@@ -31,7 +31,8 @@ class IndepVarObject:Codable{
 }
 
 class RecieveAppleHealthObject:Codable{
-    var filename:String?
+//    var filename:String?
+    var dateStringTimeStamp: String?
     var last_chunk:String?
     var arryAppleHealthQuantityCategory:[AppleHealthQuantityCategory]?
 }
@@ -48,4 +49,23 @@ class AppleHealthQuantityCategory:Codable{
     var device:String?
     var UUID:String?
     var quantity:String?
+}
+
+class RecieveAppleWorkout:Codable{
+//    var filename:String?
+    var dateStringTimeStamp: String?
+    var arryAppleHealthWorkout:[AppleHealthWorkout]?
+}
+
+class AppleHealthWorkout:Codable{
+    var sampleType:String?
+    var startDate:String?
+    var endDate:String?
+    var duration:String?
+    var totalEnergyBurned:String?
+    var totalDistance:String?
+    var sourceName:String?
+    var sourceVersion:String?
+    var device:String?
+    var UUID:String?
 }
