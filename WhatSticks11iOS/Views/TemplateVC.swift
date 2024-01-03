@@ -54,7 +54,7 @@ class TemplateVC: UIViewController {
         vwTopBar.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         vwTopBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.10).isActive = true
 //        if let unwrapped_image = UIImage(named: "wsLogo192") {
-        if let unwrapped_image = UIImage(named: "wsLogoNoNameMedium") {
+        if let unwrapped_image = UIImage(named: "wsLogo180noName") {
             imgVwLogo.image = unwrapped_image.scaleImage(toSize: CGSize(width: 15, height: 15))
         }
         // Setup labels and image view
@@ -91,7 +91,7 @@ class TemplateVC: UIViewController {
     }
     
     func changeLogoForLoginVC(){
-        let logoImageName = isInitialViewController ? "wsLogo192" : "wsLogoSmallNoName"
+        let logoImageName = isInitialViewController ? "wsLogo180" : "wsLogo180noName"
         if let unwrapped_image = UIImage(named: logoImageName) {
             imgVwLogo.image = unwrapped_image.scaleImage(toSize: CGSize(width: 23, height: 23))
         }

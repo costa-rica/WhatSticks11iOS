@@ -367,6 +367,7 @@ class DashboardTableCell: UITableViewCell {
         lblIndepVarName.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         lblIndepVarName.translatesAutoresizingMaskIntoConstraints = false
         lblIndepVarName.accessibilityIdentifier="lblIndepVarName"
+        lblIndepVarName.numberOfLines = 0
         
         contentView.addSubview(vwCircle)
         vwCircle.backgroundColor = .systemBlue
@@ -384,6 +385,7 @@ class DashboardTableCell: UITableViewCell {
         NSLayoutConstraint.activate([
             lblIndepVarName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: widthFromPct(percent: 2)),
             lblIndepVarName.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor),
+            lblIndepVarName.trailingAnchor.constraint(equalTo: vwCircle.leadingAnchor, constant: widthFromPct(percent: 1)),
             
             vwCircle.topAnchor.constraint(equalTo: contentView.topAnchor,constant: heightFromPct(percent: 2)),
             vwCircle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: widthFromPct(percent: -2)),
