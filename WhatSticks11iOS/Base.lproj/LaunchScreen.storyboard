@@ -16,17 +16,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wsLogo512" translatesAutoresizingMaskIntoConstraints="NO" id="nYy-ta-rQy">
-                                <rect key="frame" x="0.0" y="59" width="393" height="759"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="wsLogo512_v2" translatesAutoresizingMaskIntoConstraints="NO" id="EaF-OD-rA0">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="nYy-ta-rQy" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="A4K-Nf-1L3"/>
-                            <constraint firstAttribute="trailing" secondItem="nYy-ta-rQy" secondAttribute="trailing" id="RZi-sc-EKi"/>
-                            <constraint firstItem="nYy-ta-rQy" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="TRN-Wk-8qQ"/>
-                            <constraint firstItem="nYy-ta-rQy" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="Ymo-CT-jKW"/>
+                            <constraint firstItem="EaF-OD-rA0" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="Dfr-Yk-cuk"/>
+                            <constraint firstItem="EaF-OD-rA0" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="IPV-eD-qob"/>
+                            <constraint firstAttribute="bottom" secondItem="EaF-OD-rA0" secondAttribute="bottom" id="gsw-QI-2Hi"/>
+                            <constraint firstItem="EaF-OD-rA0" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="vgh-FR-Iib"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -36,7 +36,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="wsLogo512" width="512" height="512"/>
+        <image name="wsLogo512_v2" width="512" height="512"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
