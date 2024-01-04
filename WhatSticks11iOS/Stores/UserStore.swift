@@ -36,7 +36,18 @@ class UserStore {
         }
     }
     var arryDataSourceObjects:[DataSourceObject]?
-    var arryDashboardTableObjects:[DashboardTableObject]?
+    var boolDashObjExists:Bool!
+//    var arryDashboardTableObjects:[DashboardTableObject]?
+    var arryDashboardTableObjects=[DashboardTableObject](){
+        didSet{
+            guard let unwp_pos = currentDashboardObjPos else {return}
+            if arryDashboardTableObjects.count >= currentDashboardObjPos{
+                currentDashboardObject = arryDashboardTableObjects[unwp_pos]
+            }
+        }
+    }
+    var currentDashboardObject:DashboardTableObject?
+    var currentDashboardObjPos: Int!
     var existing_emails = [String]()
     var urlStore:URLStore!
     var requestStore:RequestStore!
@@ -84,10 +95,10 @@ class UserStore {
         }
         task.resume()
     }
-
+    
     func callLoginUser(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         let result = requestStore.createRequestLogin(email: email, password: password)
-
+        
         switch result {
         case .success(let request):
             let task = session.dataTask(with: request) { (data, response, error) in
@@ -98,7 +109,7 @@ class UserStore {
                     }
                     return
                 }
-
+                
                 do {
                     let jsonDecoder = JSONDecoder()
                     let jsonUser = try jsonDecoder.decode(User.self, from: unwrapped_data)
@@ -112,7 +123,7 @@ class UserStore {
                 }
             }
             task.resume()
-
+            
         case .failure(let error):
             // Handle the error here
             print("* error encodeing from reqeustStore.createRequestLogin")
@@ -124,13 +135,13 @@ class UserStore {
     
     // used in Login
     func callSendDataSourceObjects(completion:@escaping (Result<[DataSourceObject],Error>) -> Void){
-//        let request: URLRequest
-//        if login{
-//            request = requestStore.createRequestWithToken(endpoint: .send_login_health_data_objects)
-//        }
-//        else{
-//            request = requestStore.createRequestWithToken(endpoint: .send_dashboard_health_data_objects)
-//        }
+        //        let request: URLRequest
+        //        if login{
+        //            request = requestStore.createRequestWithToken(endpoint: .send_login_health_data_objects)
+        //        }
+        //        else{
+        //            request = requestStore.createRequestWithToken(endpoint: .send_dashboard_health_data_objects)
+        //        }
         let request = requestStore.createRequestWithToken(endpoint: .send_data_source_objects)
         let task = requestStore.session.dataTask(with: request) { data, urlResponse, error in
             guard let unwrapped_data = data else {
@@ -200,7 +211,7 @@ class UserStore {
         }
         task.resume()
     }
-
+    
     
     func callSendDashboardTableObjects(completion: @escaping (Result<[DashboardTableObject], Error>) -> Void) {
         let request = requestStore.createRequestWithToken(endpoint: .send_dashboard_table_objects)
@@ -212,7 +223,7 @@ class UserStore {
                 }
                 return
             }
-
+            
             // Check for HTTP status code
             if let httpResponse = urlResponse as? HTTPURLResponse {
                 switch httpResponse.statusCode {
@@ -228,6 +239,7 @@ class UserStore {
                         let jsonDecoder = JSONDecoder()
                         let jsonDashboardTableObj = try jsonDecoder.decode([DashboardTableObject].self, from: unwrappedData)
                         OperationQueue.main.addOperation {
+                            
                             completion(.success(jsonDashboardTableObj))
                         }
                     } catch {
@@ -251,80 +263,80 @@ class UserStore {
         task.resume()
     }
     
-func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
-    var jsonData: Data!
-    do {
-        let jsonEncoder = JSONEncoder()
-        jsonData = try jsonEncoder.encode(object)
-    } catch {
-        print("Failed to encode json: \(error)")
-        return
+    func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
+        var jsonData: Data!
+        do {
+            let jsonEncoder = JSONEncoder()
+            jsonData = try jsonEncoder.encode(object)
+        } catch {
+            print("Failed to encode json: \(error)")
+            return
+        }
+        
+        let jsonFileURL = self.documentsURL.appendingPathComponent(filename)
+        do {
+            try jsonData.write(to: jsonFileURL)
+            //        print("Successfully wrote \(filename)")
+        } catch {
+            print("Error writing to file: \(error)")
+        }
     }
-
-    let jsonFileURL = self.documentsURL.appendingPathComponent(filename)
-    do {
-        try jsonData.write(to: jsonFileURL)
-//        print("Successfully wrote \(filename)")
-    } catch {
-        print("Error writing to file: \(error)")
-    }
-}
     func deleteJsonFile(filename:String){
-    let jsonFileURL = self.documentsURL.appendingPathComponent(filename)
-    do {
-        try fileManager.removeItem(at: jsonFileURL)
-    } catch {
-        print("No no \(filename) file exists")
-    }
-}// "arryDashboardTableObjects.json", "arryDataSourceObjects.json", "user.json"
+        let jsonFileURL = self.documentsURL.appendingPathComponent(filename)
+        do {
+            try fileManager.removeItem(at: jsonFileURL)
+        } catch {
+            print("No no \(filename) file exists")
+        }
+    }// "arryDashboardTableObjects.json", "arryDataSourceObjects.json", "user.json"
     
-
+    
     func checkDataSourceJson(completion: (Result<[DataSourceObject],Error>) -> Void){
-    
-    let userJsonFile = documentsURL.appendingPathComponent("arryDataSourceObjects.json")
-    
-    guard fileManager.fileExists(atPath: userJsonFile.path) else {
-        completion(.failure(UserStoreError.failedDecode))
-        return
+        
+        let userJsonFile = documentsURL.appendingPathComponent("arryDataSourceObjects.json")
+        
+        guard fileManager.fileExists(atPath: userJsonFile.path) else {
+            completion(.failure(UserStoreError.failedDecode))
+            return
+        }
+        //        var user:User?
+        do{
+            let jsonData = try Data(contentsOf: userJsonFile)
+            let decoder = JSONDecoder()
+            self.arryDataSourceObjects = try decoder.decode([DataSourceObject].self, from:jsonData)
+        } catch {
+            print("- failed to make userDict");
+            completion(.failure(UserStoreError.failedDecode))
+        }
+        //        guard let unwrapped_user = user else {
+        //            print("unwrapped_userDict failed")
+        //            completion(.failure(UserStoreError.failedDecode))
+        //            return
+        //        }
+        completion(.success(self.arryDataSourceObjects ?? [DataSourceObject]()))
+        
     }
-//        var user:User?
-    do{
-        let jsonData = try Data(contentsOf: userJsonFile)
-        let decoder = JSONDecoder()
-        self.arryDataSourceObjects = try decoder.decode([DataSourceObject].self, from:jsonData)
-    } catch {
-        print("- failed to make userDict");
-        completion(.failure(UserStoreError.failedDecode))
-    }
-//        guard let unwrapped_user = user else {
-//            print("unwrapped_userDict failed")
-//            completion(.failure(UserStoreError.failedDecode))
-//            return
-//        }
-    completion(.success(self.arryDataSourceObjects ?? [DataSourceObject]()))
-
-}
-
+    
     func checkDashboardJson(completion: (Result<[DashboardTableObject],Error>) -> Void){
+        
+        let userJsonFile = documentsURL.appendingPathComponent("arryDashboardTableObjects.json")
+        guard fileManager.fileExists(atPath: userJsonFile.path) else {
+            completion(.failure(UserStoreError.failedDecode))
+            return
+        }
+        do{
+            let jsonData = try Data(contentsOf: userJsonFile)
+            let decoder = JSONDecoder()
+            self.arryDashboardTableObjects = try decoder.decode([DashboardTableObject].self, from:jsonData)
+        } catch {
+            print("- failed to make userDict");
+            completion(.failure(UserStoreError.failedDecode))
+        }
+        
+        completion(.success(self.arryDashboardTableObjects ?? [DashboardTableObject]()))
+        
+    }
     
-    let userJsonFile = documentsURL.appendingPathComponent("arryDashboardTableObjects.json")
-    guard fileManager.fileExists(atPath: userJsonFile.path) else {
-        completion(.failure(UserStoreError.failedDecode))
-        return
-    }
-    do{
-        let jsonData = try Data(contentsOf: userJsonFile)
-        let decoder = JSONDecoder()
-        self.arryDashboardTableObjects = try decoder.decode([DashboardTableObject].self, from:jsonData)
-    } catch {
-        print("- failed to make userDict");
-        completion(.failure(UserStoreError.failedDecode))
-    }
-
-    completion(.success(self.arryDashboardTableObjects ?? [DashboardTableObject]()))
-
-}
-
     func checkUserJson(completion: (Result<User,Error>) -> Void){
         
         let userJsonFile = documentsURL.appendingPathComponent("user.json")
@@ -348,8 +360,8 @@ func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
             return
         }
         completion(.success(unwrapped_user))
-
+        
     }
-
+    
     
 }

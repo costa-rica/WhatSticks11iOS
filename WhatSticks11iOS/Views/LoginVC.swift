@@ -40,37 +40,14 @@ class LoginVC: TemplateVC {
     let lblScreenNameTitle = UILabel()
     
     var lblLogout:UILabel!
-    
+//    var boolDashObjExists:Bool!
     var token = "token" {
         didSet{
             if token != "token"{
-                if swRememberMe.isOn{
-//                    self.userStore.writeUserJson()
-                    self.userStore.writeObjectToJsonFile(object: self.userStore.user, filename: "user.json")
-                } else {
-//                    self.userStore.deleteUserJsonFile()
-                    self.userStore.deleteJsonFile(filename: "user.json")
-                    self.txtEmail.text = ""
-                    self.txtPassword.text = ""
-                }
-                self.userStore.callSendDataSourceObjects { responseResult in
-                    switch responseResult{
-                    case let .success(arryDataSourceObjects):
-                        self.userStore.arryDataSourceObjects = arryDataSourceObjects
-//                        self.userStore.writeDataSourceJson()
-                        self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
-//                        let dash_default = DashboardTableObject()
-
-                        self.performSegue(withIdentifier: "goToDashboardVC", sender: self)
-                    case let .failure(error):
-                        self.templateAlert(alertTitle: "Alert", alertMessage: "Login successful, but failed to get user dashboard data. Contact Nick at: nrodrig1@gmail.com. Error: \(error)")
-                    }
-                }
+                self.setDashboardObject()
             }
         }
     }
-    
-
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -256,6 +233,7 @@ class LoginVC: TemplateVC {
                 self.userStore.user.email = self.txtEmail.text
                 self.userStore.user.password = self.txtPassword.text
                 self.userStore.user.username = user_obj.username
+                
                 self.token = user_obj.token!
                 if let unwrap_oura_token = user_obj.oura_token{
                     self.userStore.user.oura_token = unwrap_oura_token
@@ -266,6 +244,51 @@ class LoginVC: TemplateVC {
                 
                 self.templateAlert(alertTitle: "\(error)", alertMessage: "Did you register? \n ¯\\_(ツ)_/¯ ")
                 }
+            }
+        }
+    }
+    func setDashboardObject(){
+        userStore.checkDashboardJson { result in
+//            print("* checking: userStore.checkDashboardJson")
+            DispatchQueue.main.async{
+                switch result{
+                case let .success(arryDashboardTableObjects):
+                    self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
+                    self.userStore.currentDashboardObjPos = 0
+                    self.userStore.currentDashboardObject = arryDashboardTableObjects[0]
+                    self.userStore.boolDashObjExists = true
+                    self.goToDashboard()
+                case let .failure(error):
+                    self.userStore.boolDashObjExists=false
+
+                    print("No arryDashboardTableObjects.json file found, error: \(error)")
+                    self.goToDashboard()
+                }
+            }
+        }
+    }
+    
+    func goToDashboard(){
+        if swRememberMe.isOn{
+//                    self.userStore.writeUserJson()
+            self.userStore.writeObjectToJsonFile(object: self.userStore.user, filename: "user.json")
+        } else {
+//                    self.userStore.deleteUserJsonFile()
+            self.userStore.deleteJsonFile(filename: "user.json")
+            self.txtEmail.text = ""
+            self.txtPassword.text = ""
+        }
+        self.userStore.callSendDataSourceObjects { responseResult in
+            switch responseResult{
+            case let .success(arryDataSourceObjects):
+                self.userStore.arryDataSourceObjects = arryDataSourceObjects
+//                        self.userStore.writeDataSourceJson()
+                self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
+//                        let dash_default = DashboardTableObject()
+
+                self.performSegue(withIdentifier: "goToDashboardVC", sender: self)
+            case let .failure(error):
+                self.templateAlert(alertTitle: "Alert", alertMessage: "Login successful, but failed to get user dashboard data. Contact Nick at: nrodrig1@gmail.com. Error: \(error)")
             }
         }
     }
@@ -355,7 +378,7 @@ class LoginVC: TemplateVC {
             dashboardVC.requestStore = self.requestStore
             dashboardVC.appleHealthDataFetcher = self.appleHealthDataFetcher
             dashboardVC.healthDataStore = self.healthDataStore
-            
+//            dashboardVC.boolDashObjExists = self.boolDashObjExists
 //            if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
 //                dashboardVC.dashboardTableObject = unwp_arryDashTableObj[0]
 //            }

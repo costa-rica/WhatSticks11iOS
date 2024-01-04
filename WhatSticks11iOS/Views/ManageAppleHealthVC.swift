@@ -212,10 +212,6 @@ extension ManageAppleHealthVC{
                         }
                     }
                     else{
-                        print("sent to processing")
-                        print("responseDict:::: ")
-                        print(responseDict)
-                        print("-------------------")
                         self.templateAlert(alertTitle: "Processing Data", alertMessage:  responseDict["alertMessage"] ?? "<failed to get good message>")
                     }
                 case let .failure(error):
@@ -316,14 +312,17 @@ extension ManageAppleHealthVC{
                             obj.recordCount = "0"
                             //                            self.userStore.writeDataSourceJson()
                             self.userStore.writeObjectToJsonFile(object: self.userStore.arryDataSourceObjects, filename: "arryDataSourceObjects.json")
+
                         }
                     }
                 }
                 self.userStore.deleteJsonFile(filename: "arryDashboardTableObjects.json")
-                if let _ = self.userStore.arryDashboardTableObjects{
-                    self.userStore.arryDashboardTableObjects!.removeAll { $0.sourceDataOfDepVar=="Apple Health Data" }
-                    
-                }
+//                if let _ = self.userStore.arryDashboardTableObjects{
+                    self.userStore.arryDashboardTableObjects.removeAll { $0.sourceDataOfDepVar=="Apple Health Data" }
+                    self.userStore.currentDashboardObjPos = nil
+                    self.userStore.arryDataSourceObjects = nil
+                self.userStore.boolDashObjExists = false
+//                }
                 
                 self.removeSpinner()
                 self.templateAlert(alertMessage: "Delete successful!")
