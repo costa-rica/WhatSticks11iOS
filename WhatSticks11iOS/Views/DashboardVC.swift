@@ -288,10 +288,10 @@ extension DashboardVC: UITableViewDelegate{
 
 extension DashboardVC: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let arryIndVarObj = userStore.arryDashboardTableObjects else {
+        guard let arryDashTableObj = userStore.arryDashboardTableObjects else {
             return 0
         }
-        return arryIndVarObj[0].arryIndepVarObjects!.count
+        return arryDashTableObj[0].arryIndepVarObjects!.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
