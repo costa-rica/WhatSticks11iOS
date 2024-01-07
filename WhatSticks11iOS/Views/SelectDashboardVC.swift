@@ -8,15 +8,21 @@
 import UIKit
 
 class SelectDashboardVC: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+    
     var delegate: SelectDashboardVCDelegate?
-    var arryDashboardTableObject: [DashboardTableObject]?
+//    var arryDashboardTableObject: [DashboardTableObject]?
+    var userStore: UserStore?
     var lblTitle = UILabel()
     var pickerDashboard = UIPickerView()
     var btnSubmit = UIButton()
     var vwSelectDashboard = UIView()
 
-    init(arryDashboardTableObject: [DashboardTableObject]?){
-        self.arryDashboardTableObject = arryDashboardTableObject
+//    init(arryDashboardTableObject: [DashboardTableObject]?, userStore:UserStore?){
+//        self.arryDashboardTableObject = arryDashboardTableObject
+//        super.init(nibName: nil, bundle: nil)
+//    }
+    init(userStore:UserStore?){
+        self.userStore=userStore
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder aDecoder: NSCoder) {
@@ -28,6 +34,10 @@ class SelectDashboardVC: UIViewController, UIPickerViewDataSource, UIPickerViewD
         self.view.frame = UIScreen.main.bounds.inset(by: UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5))
         setupView()
         addTapGestureRecognizer()
+        // Set the picker to the current dashboard position
+        if let dashboardPos = userStore?.currentDashboardObjPos, dashboardPos < (userStore?.arryDashboardTableObjects.count ?? 0) {
+            pickerDashboard.selectRow(dashboardPos, inComponent: 0, animated: false)
+        }
     }
 
     private func setupView(){
@@ -42,8 +52,7 @@ class SelectDashboardVC: UIViewController, UIPickerViewDataSource, UIPickerViewD
         vwSelectDashboard.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive=true
         vwSelectDashboard.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive=true
         vwSelectDashboard.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.90).isActive=true
-        vwSelectDashboard.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 40)).isActive=true
-        
+        vwSelectDashboard.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 20)).isActive=true
         
         // lblTitle setup
         lblTitle.text = " Select Your Dashboard "
@@ -57,20 +66,13 @@ class SelectDashboardVC: UIViewController, UIPickerViewDataSource, UIPickerViewD
         pickerDashboard.translatesAutoresizingMaskIntoConstraints = false
         vwSelectDashboard.addSubview(pickerDashboard)
         pickerDashboard.centerXAnchor.constraint(equalTo: vwSelectDashboard.centerXAnchor).isActive = true
-        pickerDashboard.topAnchor.constraint(equalTo: lblTitle.bottomAnchor, constant: heightFromPct(percent: 5)).isActive = true
-        pickerDashboard.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)).isActive=true
+        pickerDashboard.topAnchor.constraint(equalTo: lblTitle.bottomAnchor, constant: heightFromPct(percent: -0.5)).isActive = true
+        pickerDashboard.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 12)).isActive=true
+        pickerDashboard.leadingAnchor.constraint(equalTo: vwSelectDashboard.leadingAnchor, constant: widthFromPct(percent: 0.5)).isActive=true
+        pickerDashboard.trailingAnchor.constraint(equalTo: vwSelectDashboard.trailingAnchor, constant: widthFromPct(percent: -0.5)).isActive=true
         pickerDashboard.dataSource = self
         pickerDashboard.delegate = self
 
-        // btnSubmit setup
-        btnSubmit.setTitle(" Select ", for: .normal)
-        btnSubmit.backgroundColor = .systemBlue
-        btnSubmit.translatesAutoresizingMaskIntoConstraints = false
-        btnSubmit.layer.cornerRadius = 10
-        vwSelectDashboard.addSubview(btnSubmit)
-        btnSubmit.trailingAnchor.constraint(equalTo: vwSelectDashboard.trailingAnchor,constant: widthFromPct(percent: -2)).isActive = true
-        btnSubmit.topAnchor.constraint(equalTo: pickerDashboard.bottomAnchor, constant: heightFromPct(percent: 5)).isActive = true
-        btnSubmit.addTarget(self, action: #selector(touchUpInside_btnSubmit(_:)), for: .touchUpInside)
     }
 
     // UIPickerViewDataSource and UIPickerViewDelegate methods
@@ -78,20 +80,22 @@ class SelectDashboardVC: UIViewController, UIPickerViewDataSource, UIPickerViewD
         return 1
     }
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return arryDashboardTableObject?.count ?? 0
+        
+//        return arryDashboardTableObject?.count ?? 0
+        return userStore?.arryDataSourceObjects?.count ?? 0
     }
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return arryDashboardTableObject?[row].dependentVarName
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if (userStore?.arryDashboardTableObjects[row]) != nil {
+//        if let selectedDashboard = arryDashboardTableObject?[row] {
+            delegate?.didSelectDashboard(currentDashboardObjPos: row)
+        }
     }
 
-    @objc func touchUpInside_btnSubmit(_ sender: UIButton) {
-        let selectedRow = pickerDashboard.selectedRow(inComponent: 0)
-        if let selectedDashboard = arryDashboardTableObject?[selectedRow] {
-//            print("Selected: \(selectedDashboard.dependentVarName), Position: \(selectedRow)")
-            delegate?.didSelectDashboard(currentDashboardObjPos: selectedRow)
-        }
-        self.dismiss(animated: true, completion: nil)
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+//        return arryDashboardTableObject?[row].dependentVarName
+        return userStore?.arryDashboardTableObjects[row].dependentVarName
     }
+
     
     private func addTapGestureRecognizer() {
         // Create a tap gesture recognizer

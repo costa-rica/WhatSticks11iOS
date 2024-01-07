@@ -39,6 +39,7 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
         self.setScreenNameFontSize()
     }
     override func viewDidAppear(_ animated: Bool) {
+        // MARK: There is an error here
         for obj in userStore.arryDataSourceObjects!{
             print("\(obj.name!): \(obj.recordCount!)")
         }

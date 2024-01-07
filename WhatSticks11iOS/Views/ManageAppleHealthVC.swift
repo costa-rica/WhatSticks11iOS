@@ -319,8 +319,8 @@ extension ManageAppleHealthVC{
                 self.userStore.deleteJsonFile(filename: "arryDashboardTableObjects.json")
 //                if let _ = self.userStore.arryDashboardTableObjects{
                     self.userStore.arryDashboardTableObjects.removeAll { $0.sourceDataOfDepVar=="Apple Health Data" }
-                    self.userStore.currentDashboardObjPos = nil
-                    self.userStore.arryDataSourceObjects = nil
+                self.userStore.currentDashboardObjPos = nil
+                self.userStore.arryDataSourceObjects = nil
                 self.userStore.boolDashObjExists = false
 //                }
                 

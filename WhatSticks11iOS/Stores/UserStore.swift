@@ -25,7 +25,6 @@ enum UserStoreError: Error {
 }
 
 class UserStore {
-    
     let fileManager:FileManager
     let documentsURL:URL
     var user = User(){
@@ -41,8 +40,13 @@ class UserStore {
     var arryDashboardTableObjects=[DashboardTableObject](){
         didSet{
             guard let unwp_pos = currentDashboardObjPos else {return}
-            if arryDashboardTableObjects.count >= currentDashboardObjPos{
+            if arryDashboardTableObjects.count > currentDashboardObjPos{
+                
+                print("--- UserStore var arryDashboardTableObjects=[DashboardTableObject](){")
+                print("arryDashboardTableObjects.count: \(arryDashboardTableObjects.count)")
+                print("currentDashboardObjPos: \(currentDashboardObjPos)")
                 currentDashboardObject = arryDashboardTableObjects[unwp_pos]
+                // error occurs line above. Error: out of range
             }
         }
     }
@@ -61,7 +65,6 @@ class UserStore {
         self.fileManager = FileManager.default
         self.documentsURL = self.fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-    
     func callRegisterNewUser(email: String, password: String, completion: @escaping (Result<[String: String], Error>) -> Void) {
         print("- registerNewUser accessed")
         let request = requestStore.createRequestWithTokenAndBody(endPoint: .register, body: ["new_email":email, "new_password":password])
@@ -95,7 +98,6 @@ class UserStore {
         }
         task.resume()
     }
-    
     func callLoginUser(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         let result = requestStore.createRequestLogin(email: email, password: password)
         
@@ -132,7 +134,6 @@ class UserStore {
             }
         }
     }
-    
     // used in Login
     func callSendDataSourceObjects(completion:@escaping (Result<[DataSourceObject],Error>) -> Void){
         //        let request: URLRequest
@@ -166,8 +167,6 @@ class UserStore {
         }
         task.resume()
     }
-    
-    
     func callDeleteUser(completion: @escaping (Result<[String: String], Error>) -> Void) {
         print("- in callDeleteAppleHealthData")
         let request = requestStore.createRequestWithToken(endpoint: .delete_user)
@@ -211,8 +210,6 @@ class UserStore {
         }
         task.resume()
     }
-    
-    
     func callSendDashboardTableObjects(completion: @escaping (Result<[DashboardTableObject], Error>) -> Void) {
         let request = requestStore.createRequestWithToken(endpoint: .send_dashboard_table_objects)
         let task = requestStore.session.dataTask(with: request) { data, urlResponse, error in
@@ -262,7 +259,6 @@ class UserStore {
         }
         task.resume()
     }
-    
     func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
         var jsonData: Data!
         do {
@@ -321,7 +317,8 @@ class UserStore {
         
         let userJsonFile = documentsURL.appendingPathComponent("arryDashboardTableObjects.json")
         guard fileManager.fileExists(atPath: userJsonFile.path) else {
-            completion(.failure(UserStoreError.failedDecode))
+            print("-in UserStore file not found -")
+            completion(.failure(UserStoreError.fileNotFound))
             return
         }
         do{

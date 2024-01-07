@@ -54,6 +54,7 @@ class LoginVC: TemplateVC {
         self.requestStore = RequestStore()
         self.setupIsDev(urlStore: requestStore.urlStore)
         self.userStore = UserStore()
+        self.userStore.currentDashboardObjPos = 0
         self.userStore.requestStore = self.requestStore
         self.appleHealthDataFetcher = AppleHealthDataFetcher()
         self.healthDataStore = HealthDataStore()
@@ -89,6 +90,7 @@ class LoginVC: TemplateVC {
             }
         }
         userStore.checkDashboardJson { result in
+            print("- func setup_checkFiles() ")
             DispatchQueue.main.async{
                 switch result{
                 case .success(_):
@@ -249,12 +251,12 @@ class LoginVC: TemplateVC {
     }
     func setDashboardObject(){
         userStore.checkDashboardJson { result in
-//            print("* checking: userStore.checkDashboardJson")
+            print("* func setDashboardObject() checking: userStore.checkDashboardJson")
             DispatchQueue.main.async{
                 switch result{
                 case let .success(arryDashboardTableObjects):
                     self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
-                    self.userStore.currentDashboardObjPos = 0
+                    
                     self.userStore.currentDashboardObject = arryDashboardTableObjects[0]
                     self.userStore.boolDashObjExists = true
                     self.goToDashboard()

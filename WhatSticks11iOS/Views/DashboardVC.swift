@@ -23,7 +23,8 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
     var lblDashboardTitle=UILabel()
     var btnRefreshDashboard:UIButton!
     var btnTblDashboardOptions:UIButton?
-    var btnDashboardTitleInfo = UIButton(type: .custom)
+//    var btnDashboardTitleInfo = UIButton(type: .custom)
+    var btnDashboardTitleInfo:UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,6 +44,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
             if let _ = self.tblDashboard{
                 self.tblDashboard.removeFromSuperview()
                 self.lblDashboardTitle.removeFromSuperview()
+                self.btnDashboardTitleInfo.removeFromSuperview()
             }
             print("No arryDashboardTableObjects.json file found")
         }
@@ -78,7 +80,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
     func dashboardTableObjectExists(){
         DispatchQueue.main.async {
             self.setup_lblDashboardTitle()
-            
+            self.btnDashboardTitleInfo = UIButton(type: .custom)
             self.setupInformationButton()
             self.setup_btnTblDashboardOptions()
             self.tblDashboard = UITableView()
@@ -130,7 +132,6 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         infoVC.modalTransitionStyle = .crossDissolve
         self.present(infoVC, animated: true, completion: nil)
     }
-    
     func setup_tbl(){
         tblDashboard.accessibilityIdentifier = "tblDashboard"
         tblDashboard.translatesAutoresizingMaskIntoConstraints=false
@@ -181,12 +182,14 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
             sender.transform = .identity
         }, completion: nil)
-        let selectDashboardVC = SelectDashboardVC(arryDashboardTableObject: userStore.arryDashboardTableObjects)
+//        let selectDashboardVC = SelectDashboardVC(arryDashboardTableObject: userStore.arryDashboardTableObjects)
+        let selectDashboardVC = SelectDashboardVC(userStore: userStore)
         selectDashboardVC.delegate = self
         selectDashboardVC.modalPresentationStyle = .overCurrentContext
         selectDashboardVC.modalTransitionStyle = .crossDissolve
         self.present(selectDashboardVC, animated: true, completion: nil)
     }
+    
     func setup_btnRefreshDashboard(){
         btnRefreshDashboard = UIButton()
         view.addSubview(btnRefreshDashboard)
@@ -195,7 +198,6 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         btnRefreshDashboard.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
         btnRefreshDashboard.addTarget(self, action: #selector(touchUpInside_btnRefreshDashboard(_:)), for: .touchUpInside)
         // vwFooter button Placement
-//        btnRefreshDashboard.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -15)).isActive=true
         btnRefreshDashboard.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive=true
         btnRefreshDashboard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
         btnRefreshDashboard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
@@ -203,6 +205,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         btnRefreshDashboard.layer.cornerRadius = 10
         btnRefreshDashboard.setTitle(" Refresh Table ", for: .normal)
     }
+    
     @objc func touchUpInside_btnRefreshDashboard(_ sender: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
             sender.transform = .identity
@@ -212,17 +215,15 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
                 switch responseResult {
                 case let .success(arryDashboardTableObjects):
                     print("- DashboardVC userStore.callSendDashboardTableObjects received SUCCESSFUL response")
-                    self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
-//                    if arryDashboardTableObjects.count >= self.userStore.currentDashboardObjPos{
-//                        self.userStore.currentDashboardObject = arryDashboardTableObjects
-//                    }
-//                    for obj in arryDashboardTableObjects{
-//                        if obj.dependentVarName == "Sleep Time"{
-//                            self.dashboardTableObject = obj
-//                            self.dashboardTableObjectExists()
-//                        }
-//                    }
-                    self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
+                    if self.userStore.boolDashObjExists{
+                        DispatchQueue.main.async{
+                            self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
+                            self.userStore.currentDashboardObject = arryDashboardTableObjects[self.userStore.currentDashboardObjPos]
+                            self.userStore.boolDashObjExists = true
+                        }
+                        self.dashboardTableObjectExists()
+                        self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
+                    }
                 case let .failure(error):
                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         if case UserStoreError.fileNotFound = error {
@@ -259,15 +260,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
                 case let .success(arryDashboardTableObjects):
                     print("- table updated")
                     self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
-//                    self.dashboardTableObject = arryDashboardTableObjects[self.currentDashboardObjPos]
-//                    for obj in arryDashboardTableObjects{
-//                        if obj.dependentVarName == self.lblDashboardTitle.text{
-//                            self.dashboardTableObject = obj
-//
-//                        }
-//                    }
                     self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
-                    //self.setup_arryDashDataDict() // Updates data array
                     self.tblDashboard.reloadData() // Reloads table view
                     sender.endRefreshing()
 
@@ -291,6 +284,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
     func didSelectDashboard(currentDashboardObjPos:Int){
         DispatchQueue.main.async{
             self.userStore.currentDashboardObjPos = currentDashboardObjPos
+            self.userStore.currentDashboardObject = self.userStore.arryDashboardTableObjects[currentDashboardObjPos]
             self.lblDashboardTitle.text = self.userStore.arryDashboardTableObjects[currentDashboardObjPos].dependentVarName
             print("DashboardVC has a new self.dashboardTableObject")
             print("self.dashboardTableObject: \(self.userStore.currentDashboardObject!.dependentVarName)")
