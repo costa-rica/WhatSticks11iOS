@@ -236,7 +236,8 @@ class LoginVC: TemplateVC {
                 self.userStore.user.email = self.txtEmail.text
                 self.userStore.user.password = self.txtPassword.text
                 self.userStore.user.username = user_obj.username
-                
+                self.userStore.user.timezone = user_obj.timezone
+                print("self.userStore.user.timezone: \(user_obj.timezone)")
                 self.token = user_obj.token!
                 if let unwrap_oura_token = user_obj.oura_token{
                     self.userStore.user.oura_token = unwrap_oura_token

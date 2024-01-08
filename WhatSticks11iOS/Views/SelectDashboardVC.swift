@@ -17,10 +17,6 @@ class SelectDashboardVC: UIViewController, UIPickerViewDataSource, UIPickerViewD
     var btnSubmit = UIButton()
     var vwSelectDashboard = UIView()
 
-//    init(arryDashboardTableObject: [DashboardTableObject]?, userStore:UserStore?){
-//        self.arryDashboardTableObject = arryDashboardTableObject
-//        super.init(nibName: nil, bundle: nil)
-//    }
     init(userStore:UserStore?){
         self.userStore=userStore
         super.init(nibName: nil, bundle: nil)

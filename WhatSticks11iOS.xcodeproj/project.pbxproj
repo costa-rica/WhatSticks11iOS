@@ -29,6 +29,7 @@
 		014205B72B2382D200315904 /* ManageAppleHealthVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205B62B2382D200315904 /* ManageAppleHealthVC.swift */; };
 		014205B92B23837900315904 /* HealthDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205B82B23837900315904 /* HealthDataStore.swift */; };
 		014205BB2B23841C00315904 /* AppleHealthDataUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */; };
+		01534C152B4C871600C24302 /* timezones.txt in Resources */ = {isa = PBXBuildFile; fileRef = 01534C142B4C871600C24302 /* timezones.txt */; };
 		016988A82B300D74009EA492 /* ManageUserVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016988A72B300D74009EA492 /* ManageUserVC.swift */; };
 		01B02DE82B4C306300A38D0B /* LocationFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B02DE72B4C306300A38D0B /* LocationFetcher.swift */; };
 		01CF9D632B46F7D200EB36C1 /* SelectDashboardVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CF9D622B46F7D200EB36C1 /* SelectDashboardVC.swift */; };
@@ -79,6 +80,7 @@
 		014205B82B23837900315904 /* HealthDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDataStore.swift; sourceTree = "<group>"; };
 		014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthDataUtils.swift; sourceTree = "<group>"; };
 		014205BC2B24459800315904 /* WhatSticks11iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhatSticks11iOS.entitlements; sourceTree = "<group>"; };
+		01534C142B4C871600C24302 /* timezones.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = timezones.txt; sourceTree = "<group>"; };
 		016988A72B300D74009EA492 /* ManageUserVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageUserVC.swift; sourceTree = "<group>"; };
 		01B02DE72B4C306300A38D0B /* LocationFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationFetcher.swift; sourceTree = "<group>"; };
 		01CF9D622B46F7D200EB36C1 /* SelectDashboardVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDashboardVC.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				014205AC2B21E95300315904 /* MiscUtils.swift */,
 				014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */,
 				01B02DE72B4C306300A38D0B /* LocationFetcher.swift */,
+				01534C142B4C871600C24302 /* timezones.txt */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -314,6 +317,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0142057B2B21113D00315904 /* LaunchScreen.storyboard in Resources */,
+				01534C152B4C871600C24302 /* timezones.txt in Resources */,
 				014205782B21113D00315904 /* Assets.xcassets in Resources */,
 				014205762B21113C00315904 /* Main.storyboard in Resources */,
 			);

@@ -7,21 +7,29 @@
 
 import UIKit
 
-class ManageUserVC: TemplateVC{
+class ManageUserVC: TemplateVC, UIPickerViewDelegate, UIPickerViewDataSource{
     
     var userStore: UserStore!
     var requestStore: RequestStore!
     var healthDataStore:HealthDataStore!
     var appleHealthDataFetcher: AppleHealthDataFetcher!
-    var btnDeleteUser=UIButton()
+    
     var swtchEmailNotifications = UISwitch()
     var lblEmailNotifications = UILabel()
-//    var spinnerViewManageUserVC:UIView!
     var btnManageHealthSettings = UIButton()
     var lblFindSettingsScreenForAppleHealthPermission = UILabel()
     var lblPermissionsTitle = UILabel()
+
+    var timezones: [String] = []
+    let lineViewUpdateTz = UIView()
+    var lblPickerTzTitle = UILabel()
+    var pickerTz = UIPickerView()
+    var btnUpdate = UIButton()
     
- 
+    let lineViewDeleteUser = UIView()
+    var btnDeleteUser=UIButton()
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupIsDev(urlStore: requestStore.urlStore)
@@ -30,25 +38,111 @@ class ManageUserVC: TemplateVC{
         print("- in ManageUserVC viewDidLoad -")
         
         setup_btnDeleteUser()
-
         setup_lblFindSettingsScreenForAppleHealthPermission()
-//        setupEmailNotifications()
-//        setup_btnManageHealthSettings()
+        timezones = loadTimezones()
+        setup_pickerTz()
+        
     }
+    
+    func setup_pickerTz(){
+        
+        lineViewUpdateTz.backgroundColor = UIColor(named: "lineColor")
+        view.addSubview(lineViewUpdateTz)
+        lineViewUpdateTz.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(lblPickerTzTitle)
+        lblPickerTzTitle.text = "Change your timezone:"
+        lblPickerTzTitle.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        lblPickerTzTitle.translatesAutoresizingMaskIntoConstraints = false
+        lblPickerTzTitle.accessibilityIdentifier="lblPickerTzTitle"
+        // UIPickerView setup
+        pickerTz.delegate = self
+        pickerTz.dataSource = self
+        pickerTz.center = view.center
+        // pickerDashboard setup
+        pickerTz.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(pickerTz)
+        pickerTz.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        pickerTz.topAnchor.constraint(equalTo: lblPickerTzTitle.bottomAnchor,constant: heightFromPct(percent: -1)).isActive = true
+        pickerTz.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 12) ).isActive=true
+        
+        view.addSubview(btnUpdate)
+        btnUpdate.translatesAutoresizingMaskIntoConstraints=false
+        btnUpdate.accessibilityIdentifier="btnUpdate"
+        btnUpdate.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
+        btnUpdate.addTarget(self, action: #selector(touchUpInside_btnUpdate(_:)), for: .touchUpInside)
 
+        btnUpdate.backgroundColor = .systemBlue
+        btnUpdate.layer.cornerRadius = 10
+        btnUpdate.setTitle(" Update Account ", for: .normal)
+        NSLayoutConstraint.activate([
+        lblPickerTzTitle.topAnchor.constraint(equalTo: lineViewUpdateTz.bottomAnchor, constant: heightFromPct(percent: 3)),
+        lblPickerTzTitle.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)),
+        lblPickerTzTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)),
+
+        btnUpdate.topAnchor.constraint(equalTo: pickerTz.bottomAnchor),
+        btnUpdate.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)),
+        btnUpdate.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)),
+
+        lineViewUpdateTz.topAnchor.constraint(equalTo: lblFindSettingsScreenForAppleHealthPermission.bottomAnchor, constant: heightFromPct(percent: 2)),
+        lineViewUpdateTz.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+        lineViewUpdateTz.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+        lineViewUpdateTz.heightAnchor.constraint(equalToConstant: 1), // Set line thickness
+        lineViewUpdateTz.centerYAnchor.constraint(equalTo: self.view.centerYAnchor) // Position where you want the line
+        ])
+        setDefaultPickerValue()
+    }
+    @objc func touchUpInside_btnUpdate(_ sender: UIButton) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
+            sender.transform = .identity
+        }, completion: nil)
+        print("delete user api call")
+
+        userStore.user.timezone = timezones[pickerTz.selectedRow(inComponent: 0)]
+
+        userStore.callUpdateUser { responseResult in
+            switch responseResult{
+            case let .success(updateMessage):
+                self.templateAlert(alertTitle: "Success!", alertMessage: updateMessage)
+            case .failure(_):
+                self.templateAlert(alertMessage: "Failed to update timezone")
+            }
+        }
+    }
+    
+    func setDefaultPickerValue() {
+        if let defaultTimeZone = userStore.user.timezone,
+           let defaultIndex = timezones.firstIndex(of: defaultTimeZone) {
+            pickerTz.selectRow(defaultIndex, inComponent: 0, animated: true)
+        }
+    }
     
     func setup_btnDeleteUser(){
+        lineViewDeleteUser.backgroundColor = UIColor(named: "lineColor")
+        view.addSubview(lineViewDeleteUser)
+        lineViewDeleteUser.translatesAutoresizingMaskIntoConstraints = false
+
         view.addSubview(btnDeleteUser)
         btnDeleteUser.translatesAutoresizingMaskIntoConstraints=false
         btnDeleteUser.accessibilityIdentifier="btnDeleteUser"
         btnDeleteUser.addTarget(self, action: #selector(self.touchDown(_:)), for: .touchDown)
         btnDeleteUser.addTarget(self, action: #selector(touchUpInside_btnDeleteUser(_:)), for: .touchUpInside)
-        btnDeleteUser.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -2)).isActive=true
-        btnDeleteUser.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)).isActive=true
-        btnDeleteUser.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)).isActive=true
         btnDeleteUser.backgroundColor = .systemRed
         btnDeleteUser.layer.cornerRadius = 10
         btnDeleteUser.setTitle(" Delete Account ", for: .normal)
+        
+        NSLayoutConstraint.activate([
+            lineViewDeleteUser.bottomAnchor.constraint(equalTo: btnDeleteUser.topAnchor, constant: heightFromPct(percent: -2)),
+            lineViewDeleteUser.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            lineViewDeleteUser.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            lineViewDeleteUser.heightAnchor.constraint(equalToConstant: 1), // Set line thickness
+//            lineViewDeleteUser.centerYAnchor.constraint(equalTo: self.view.centerYAnchor), // Position where you want the line
+            
+            btnDeleteUser.bottomAnchor.constraint(equalTo: vwFooter.topAnchor, constant: heightFromPct(percent: -2)),
+            btnDeleteUser.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: widthFromPct(percent: -2)),
+            btnDeleteUser.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: widthFromPct(percent: 2)),
+        ])
+        
+        
     }
     @objc func touchUpInside_btnDeleteUser(_ sender: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
@@ -131,7 +225,6 @@ class ManageUserVC: TemplateVC{
 //            }
 //        }
     }
-    
     @objc func alertDeleteConfirmation() {
         let alertController = UIAlertController(title: "Are you sure you want to delete?", message: "This will only delete data from What Sticks Databases. Your source data will be unaffected.", preferredStyle: .alert)
         // 'Yes' action
@@ -182,9 +275,24 @@ class ManageUserVC: TemplateVC{
         }
     }
 
-
 }
 
+extension ManageUserVC{
+    
+    
+    // UIPickerView DataSource and Delegate methods
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return timezones.count
+    }
+
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return timezones[row]
+    }
+}
 
 
 class InfoVC: UIViewController{

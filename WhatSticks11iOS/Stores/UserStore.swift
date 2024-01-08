@@ -11,6 +11,7 @@ enum UserStoreError: Error {
     case failedDecode
     case failedToLogin
     case failedToRegister
+    case failedToUpdateUser
     case failedToRecieveServerResponse
     case failedToRecievedExpectedResponse
     case fileNotFound
@@ -36,7 +37,6 @@ class UserStore {
     }
     var arryDataSourceObjects:[DataSourceObject]?
     var boolDashObjExists:Bool!
-//    var arryDashboardTableObjects:[DashboardTableObject]?
     var arryDashboardTableObjects=[DashboardTableObject](){
         didSet{
             guard let unwp_pos = currentDashboardObjPos else {return}
@@ -65,6 +65,36 @@ class UserStore {
         self.fileManager = FileManager.default
         self.documentsURL = self.fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
+    func callUpdateUser(completion: @escaping (Result<String, Error>) -> Void) {
+        let request = requestStore.createRequestWithTokenAndBody(endPoint: .update_user, body: ["timezone":user.timezone])
+        let task = session.dataTask(with: request) { data, response, error in
+            guard let unwrappedData = data else {
+                print("no data response")
+                completion(.failure(UserStoreError.failedToRecieveServerResponse))
+                return
+            }
+            do {
+                if let jsonResult = try JSONSerialization.jsonObject(with: unwrappedData, options: []) as? [String: Any] {
+                    print("json serialized well")
+                    if let message = jsonResult["message"] as? String {
+                        OperationQueue.main.addOperation {
+                            completion(.success(message))
+                        }
+                    } else {
+                        OperationQueue.main.addOperation {
+                            completion(.failure(UserStoreError.failedToUpdateUser))
+                        }
+                    }
+                } else {
+                    throw UserStoreError.failedDecode
+                }
+            } catch {
+                print("---- UserStore.failedToUpdateUser: Failed to read response")
+                completion(.failure(UserStoreError.failedDecode))
+            }
+        }
+        task.resume()
+    }
     func callRegisterNewUser(email: String, password: String,lat:Double,lon:Double, completion: @escaping (Result<[String: String], Error>) -> Void) {
         
         let latString = String(lat)
@@ -78,7 +108,6 @@ class UserStore {
                 completion(.failure(UserStoreError.failedToRecieveServerResponse))
                 return
             }
-            print("about to serialize")
             do {
                 if let jsonResult = try JSONSerialization.jsonObject(with: unwrappedData, options: []) as? [String: Any] {
                     print("json serialized well")
@@ -263,6 +292,12 @@ class UserStore {
         }
         task.resume()
     }
+
+    
+}
+
+// writing json files
+extension UserStore{
     func writeObjectToJsonFile<T: Encodable>(object: T, filename: String) {
         var jsonData: Data!
         do {
@@ -362,6 +397,5 @@ class UserStore {
         completion(.success(unwrapped_user))
         
     }
-    
     
 }

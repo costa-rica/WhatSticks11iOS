@@ -112,3 +112,18 @@ func timeStampsForFileNames() -> String {
     let dateString = dateFormatter.string(from: currentDate)
     return dateString
 }
+
+
+func loadTimezones() -> [String] {
+    var timezones: [String] = []
+    // Assuming you've added timezones.txt to your project
+    if let path = Bundle.main.path(forResource: "timezones", ofType: "txt") {
+        do {
+            let data = try String(contentsOfFile: path, encoding: .utf8)
+            timezones = data.components(separatedBy: .newlines)
+        } catch {
+            print(error)
+        }
+    }
+    return timezones
+}

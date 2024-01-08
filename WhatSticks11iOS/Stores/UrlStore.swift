@@ -28,13 +28,12 @@ enum EndPoint: String {
     case delete_user = "delete_user"
     case send_data_source_objects = "send_data_source_objects"
     case send_dashboard_table_objects = "send_dashboard_table_objects"
-//    case receive_apple_health_data = "receive_apple_health_data"
     case receive_apple_qty_cat_data = "receive_apple_qty_cat_data"
     case receive_apple_workouts_data = "receive_apple_workouts_data"
     case delete_apple_health_for_user = "delete_apple_health_for_user"
     case add_oura_token = "add_oura_token"
     case add_oura_sleep_sessions = "add_oura_sleep_sessions"
-    
+    case update_user = "update_user"
 }
 
 class URLStore {
