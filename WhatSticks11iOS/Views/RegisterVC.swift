@@ -12,6 +12,7 @@ class RegisterVC: TemplateVC {
     var userStore: UserStore!
 //    var urlStore: URLStore!
     var requestStore: RequestStore!
+    var locationFetcher:LocationFetcher!
     // Login/Register
     let stckVwRegister = UIStackView()//accessIdentifier set
     let stckVwEmailRow = UIStackView()//accessIdentifier set
@@ -170,8 +171,9 @@ class RegisterVC: TemplateVC {
     
     func requestRegister() {
         print("- RegisterVC: requestRegister()")
-
-        userStore.callRegisterNewUser(email: txtEmail.text!, password: txtPassword.text!) { responseResultRegister in
+        let lat = locationFetcher.userLocation?.latitude ?? 999.99
+        let lon = locationFetcher.userLocation?.longitude ?? 999.99
+        userStore.callRegisterNewUser(email: txtEmail.text!, password: txtPassword.text!,lat:lat, lon: lon) { responseResultRegister in
             DispatchQueue.main.async {
                 switch responseResultRegister {
                 case .success(_):

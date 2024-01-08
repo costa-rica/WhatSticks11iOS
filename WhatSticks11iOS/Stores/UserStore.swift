@@ -65,9 +65,13 @@ class UserStore {
         self.fileManager = FileManager.default
         self.documentsURL = self.fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-    func callRegisterNewUser(email: String, password: String, completion: @escaping (Result<[String: String], Error>) -> Void) {
+    func callRegisterNewUser(email: String, password: String,lat:Double,lon:Double, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        
+        let latString = String(lat)
+        let lonString = String(lon)
+        
         print("- registerNewUser accessed")
-        let request = requestStore.createRequestWithTokenAndBody(endPoint: .register, body: ["new_email":email, "new_password":password])
+        let request = requestStore.createRequestWithTokenAndBody(endPoint: .register, body: ["new_email":email, "new_password":password, "lat":latString,"lon":lonString])
         let task = session.dataTask(with: request) { data, response, error in
             guard let unwrappedData = data else {
                 print("no data response")
@@ -285,7 +289,6 @@ class UserStore {
             print("No no \(filename) file exists")
         }
     }// "arryDashboardTableObjects.json", "arryDataSourceObjects.json", "user.json"
-    
     
     func checkDataSourceJson(completion: (Result<[DataSourceObject],Error>) -> Void){
         

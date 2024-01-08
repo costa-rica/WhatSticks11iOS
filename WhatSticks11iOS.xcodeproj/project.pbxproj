@@ -30,6 +30,7 @@
 		014205B92B23837900315904 /* HealthDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205B82B23837900315904 /* HealthDataStore.swift */; };
 		014205BB2B23841C00315904 /* AppleHealthDataUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */; };
 		016988A82B300D74009EA492 /* ManageUserVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016988A72B300D74009EA492 /* ManageUserVC.swift */; };
+		01B02DE82B4C306300A38D0B /* LocationFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B02DE72B4C306300A38D0B /* LocationFetcher.swift */; };
 		01CF9D632B46F7D200EB36C1 /* SelectDashboardVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CF9D622B46F7D200EB36C1 /* SelectDashboardVC.swift */; };
 /* End PBXBuildFile section */
 
@@ -79,6 +80,7 @@
 		014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthDataUtils.swift; sourceTree = "<group>"; };
 		014205BC2B24459800315904 /* WhatSticks11iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhatSticks11iOS.entitlements; sourceTree = "<group>"; };
 		016988A72B300D74009EA492 /* ManageUserVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageUserVC.swift; sourceTree = "<group>"; };
+		01B02DE72B4C306300A38D0B /* LocationFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationFetcher.swift; sourceTree = "<group>"; };
 		01CF9D622B46F7D200EB36C1 /* SelectDashboardVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDashboardVC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -202,6 +204,7 @@
 			children = (
 				014205AC2B21E95300315904 /* MiscUtils.swift */,
 				014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */,
+				01B02DE72B4C306300A38D0B /* LocationFetcher.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -346,6 +349,7 @@
 				01CF9D632B46F7D200EB36C1 /* SelectDashboardVC.swift in Sources */,
 				016988A82B300D74009EA492 /* ManageUserVC.swift in Sources */,
 				014205B12B221C0200315904 /* RegisterVC.swift in Sources */,
+				01B02DE82B4C306300A38D0B /* LocationFetcher.swift in Sources */,
 				014205B52B23772600315904 /* ManageDataVC.swift in Sources */,
 				014205BB2B23841C00315904 /* AppleHealthDataUtils.swift in Sources */,
 				014205A42B2112B300315904 /* DashboardHealthDataObject.swift in Sources */,
@@ -543,6 +547,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "What Sticks";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Allow What Sticks to collect Health Data for analysis.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Allow What Sticks to update you Health Data for analysis.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Allow What Sticks to get your location to calculate the correct timezone";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow What Sticks to get your location to calculate the correct timezone";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -575,6 +581,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "What Sticks";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Allow What Sticks to collect Health Data for analysis.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Allow What Sticks to update you Health Data for analysis.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Allow What Sticks to get your location to calculate the correct timezone";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow What Sticks to get your location to calculate the correct timezone";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;

@@ -15,4 +15,7 @@ class User:Codable {
     var token: String?
     var admin: Bool?
     var oura_token: String?
+    var latitude:String?
+    var longitude:String?
+    var timezone:String?
 }

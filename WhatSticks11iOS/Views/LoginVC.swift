@@ -11,11 +11,10 @@ import UIKit
 class LoginVC: TemplateVC {
     
     var userStore: UserStore!
-//    var urlStore: URLStore!
     var requestStore: RequestStore!
     var appleHealthDataFetcher: AppleHealthDataFetcher!
-//    var hkHealthStore: HKHealthStore!
     var healthDataStore: HealthDataStore!
+    var locationFetcher: LocationFetcher!
     
     // Login
     let stckVwLogin = UIStackView()//accessIdentifier set
@@ -59,6 +58,8 @@ class LoginVC: TemplateVC {
         self.appleHealthDataFetcher = AppleHealthDataFetcher()
         self.healthDataStore = HealthDataStore()
         self.healthDataStore.requestStore = self.requestStore
+        self.locationFetcher = LocationFetcher()
+        self.locationFetcher.fetchLocation()
         
         // Set up tap gesture to dismiss keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(viewTapped))
@@ -72,6 +73,7 @@ class LoginVC: TemplateVC {
         setupForgotPasswordButton()
         setupSignUpLabel()
         setup_checkFiles()
+        
     }
     override func viewWillAppear(_ animated: Bool) {
         self.isInitialViewController=true
@@ -214,7 +216,6 @@ class LoginVC: TemplateVC {
         btnLogin.addTarget(self, action: #selector(touchDown(_:)), for: .touchDown)
         btnLogin.addTarget(self, action: #selector(touchUpInside(_:)), for: .touchUpInside)
     }
-    
     
     @objc func touchUpInside(_ sender: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
@@ -366,13 +367,14 @@ class LoginVC: TemplateVC {
         performSegue(withIdentifier: "goToRegisterVC", sender: self)
     }
     
-   
+
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "goToRegisterVC"){
             let registerVC = segue.destination as! RegisterVC
             registerVC.userStore = self.userStore
             registerVC.requestStore = self.requestStore
+            registerVC.locationFetcher = self.locationFetcher
         }
         else if (segue.identifier == "goToDashboardVC"){
             let dashboardVC = segue.destination as! DashboardVC
