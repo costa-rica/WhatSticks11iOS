@@ -15,15 +15,11 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
     var healthDataStore:HealthDataStore!
     var btnGoToManageDataVC=UIButton()
     var tblDashboard:UITableView!
-//    var arryDashboardTableObject: [DashboardTableObject]?
-//    var dashboardTableObject: DashboardTableObject?
-//    var currentDashboardObjPos: Int!
     var boolDashObjExists:Bool!
     var btnCheckDashTableObj = UIButton()
     var lblDashboardTitle=UILabel()
     var btnRefreshDashboard:UIButton!
     var btnTblDashboardOptions:UIButton?
-//    var btnDashboardTitleInfo = UIButton(type: .custom)
     var btnDashboardTitleInfo:UIButton!
     
     override func viewDidLoad() {
@@ -33,13 +29,50 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         self.lblScreenName.text = "Dashboard"
         print("- in DashboardVC viewDidLoad -")
         setup_btnGoToManageDataVC()
-        userStore.currentDashboardObjPos = 0
     }
     override func viewWillAppear(_ animated: Bool) {
+        checkDashboardTableObject()
+        //        if self.userStore.boolDashObjExists{
+        //            self.dashboardTableObjectExists()
+        //            self.lblDashboardTitle.text = self.userStore.currentDashboardObject!.dependentVarName
+        //        } else {
+        //            self.setup_btnRefreshDashboard()
+        //            if let _ = self.tblDashboard{
+        //                self.tblDashboard.removeFromSuperview()
+        //                self.lblDashboardTitle.removeFromSuperview()
+        //                self.btnDashboardTitleInfo.removeFromSuperview()
+        //            }
+        //            print("No arryDashboardTableObjects.json file found")
+        //        }
+    }
+    
+    //    func dashboardTableObjectExists(){
+    func checkDashboardTableObject(){
         if self.userStore.boolDashObjExists{
-            self.dashboardTableObjectExists()
+            
             self.lblDashboardTitle.text = self.userStore.currentDashboardObject!.dependentVarName
-        } else {
+            DispatchQueue.main.async {
+                self.setup_lblDashboardTitle()
+                self.btnDashboardTitleInfo = UIButton(type: .custom)
+                self.setupInformationButton()
+                self.setup_btnTblDashboardOptions()
+                self.tblDashboard = UITableView()
+                self.setup_tbl()
+                self.tblDashboard.delegate = self
+                self.tblDashboard.dataSource = self
+                self.tblDashboard.register(DashboardTableCell.self, forCellReuseIdentifier: "DashboardTableCell")
+                self.tblDashboard.rowHeight = UITableView.automaticDimension
+                self.tblDashboard.estimatedRowHeight = 100
+                let refreshControl = UIRefreshControl()
+                refreshControl.addTarget(self, action: #selector(self.refreshData(_:)), for: .valueChanged)
+                self.tblDashboard.refreshControl = refreshControl
+                
+                if let _ = self.btnRefreshDashboard{
+                    self.btnRefreshDashboard.removeFromSuperview()
+                }
+                
+            }
+        }else {
             self.setup_btnRefreshDashboard()
             if let _ = self.tblDashboard{
                 self.tblDashboard.removeFromSuperview()
@@ -48,60 +81,9 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
             }
             print("No arryDashboardTableObjects.json file found")
         }
-//        userStore.checkDashboardJson { result in
-////            print("* checking: userStore.checkDashboardJson")
-//            DispatchQueue.main.async{
-//                switch result{
-//                case .success(_):
-//                    if let unwp_arryDashTableObj = self.userStore.arryDashboardTableObjects{
-//
-////                        self.dashboardTableObject = unwp_arryDashTableObj[self.currentDashboardObjPos]
-////                        self.arryDashboardTableObject = unwp_arryDashTableObj
-//                        self.dashboardTableObjectExists()
-//                        self.lblDashboardTitle.text = unwp_arryDashTableObj[self.userStore.currentDashboardObjPos].dependentVarName
-//                    }
-//                    else{
-//                        print("- did not find self.userStore.arryDashboardTableObjects")
-//                        self.templateAlert(alertTitle: "Error", alertMessage: "Something wrong with viewWillAppear DashboardVC")
-//                        self.setup_btnRefreshDashboard()
-//                    }
-//                case let .failure(error):
-//                    self.setup_btnRefreshDashboard()
-//                    if let _ = self.tblDashboard{
-//                        self.tblDashboard.removeFromSuperview()
-//                        self.lblDashboardTitle.removeFromSuperview()
-//                    }
-//                    print("No arryDashboardTableObjects.json file found, error: \(error)")
-//                }
-//            }
-//        }
-    }
-
-    func dashboardTableObjectExists(){
-        DispatchQueue.main.async {
-            self.setup_lblDashboardTitle()
-            self.btnDashboardTitleInfo = UIButton(type: .custom)
-            self.setupInformationButton()
-            self.setup_btnTblDashboardOptions()
-            self.tblDashboard = UITableView()
-            self.setup_tbl()
-            self.tblDashboard.delegate = self
-            self.tblDashboard.dataSource = self
-            self.tblDashboard.register(DashboardTableCell.self, forCellReuseIdentifier: "DashboardTableCell")
-            self.tblDashboard.rowHeight = UITableView.automaticDimension
-            self.tblDashboard.estimatedRowHeight = 100
-            let refreshControl = UIRefreshControl()
-            refreshControl.addTarget(self, action: #selector(self.refreshData(_:)), for: .valueChanged)
-            self.tblDashboard.refreshControl = refreshControl
-            
-            if let _ = self.btnRefreshDashboard{
-                self.btnRefreshDashboard.removeFromSuperview()
-            }
-
-        }
     }
     func setup_lblDashboardTitle(){
-
+        
         lblDashboardTitle.text = userStore.currentDashboardObject?.dependentVarName ?? "No title"
         lblDashboardTitle.font = UIFont(name: "ArialRoundedMTBold", size: 45)
         lblDashboardTitle.translatesAutoresizingMaskIntoConstraints = false
@@ -124,7 +106,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
             btnDashboardTitleInfo.centerYAnchor.constraint(equalTo: lblDashboardTitle.centerYAnchor, constant: heightFromPct(percent: -2)).isActive=true
             
         }
-
+        
     }
     @objc private func infoButtonTapped() {
         let infoVC = InfoVC(dashboardTableObject: userStore.currentDashboardObject)
@@ -160,9 +142,8 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
             sender.transform = .identity
         }, completion: nil)
         performSegue(withIdentifier: "goToManageDataVC", sender: self)
-
+        
     }
-    
     func setup_btnTblDashboardOptions(){
         btnTblDashboardOptions = UIButton()
         guard let btnTblDashboardOptions = btnTblDashboardOptions else {return}
@@ -182,14 +163,13 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
             sender.transform = .identity
         }, completion: nil)
-//        let selectDashboardVC = SelectDashboardVC(arryDashboardTableObject: userStore.arryDashboardTableObjects)
+        //        let selectDashboardVC = SelectDashboardVC(arryDashboardTableObject: userStore.arryDashboardTableObjects)
         let selectDashboardVC = SelectDashboardVC(userStore: userStore)
         selectDashboardVC.delegate = self
         selectDashboardVC.modalPresentationStyle = .overCurrentContext
         selectDashboardVC.modalTransitionStyle = .crossDissolve
         self.present(selectDashboardVC, animated: true, completion: nil)
     }
-    
     func setup_btnRefreshDashboard(){
         btnRefreshDashboard = UIButton()
         view.addSubview(btnRefreshDashboard)
@@ -210,41 +190,47 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
             sender.transform = .identity
         }, completion: nil)
-        
+        print("*--- self.userStore.arryDashboardTableObjects ---*")
+        if self.userStore.arryDashboardTableObjects.count > 0 {
+            print("count: \(self.userStore.arryDashboardTableObjects.count)")
+            print("0 dependentVarName: \(self.userStore.arryDashboardTableObjects[0].dependentVarName!)")
+            print("1 dependentVarName: \(self.userStore.arryDashboardTableObjects[1].dependentVarName!)")
+        }
         self.userStore.callSendDashboardTableObjects { responseResult in
-                switch responseResult {
-                case let .success(arryDashboardTableObjects):
-                    print("- DashboardVC userStore.callSendDashboardTableObjects received SUCCESSFUL response")
-                    if self.userStore.boolDashObjExists{
-                        DispatchQueue.main.async{
-                            self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
-                            self.userStore.currentDashboardObject = arryDashboardTableObjects[self.userStore.currentDashboardObjPos]
-                            self.userStore.boolDashObjExists = true
-                        }
-                        self.dashboardTableObjectExists()
-                        self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
-                    }
-                case let .failure(error):
-                       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        if case UserStoreError.fileNotFound = error {
-                            print("* file not found error *")
-                            self.templateAlert(alertTitle: "", alertMessage: "No data exists. Go to Manage Data to add data for your dashboard.")
-                        } else {
-                            self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
-                        }
+            switch responseResult {
+            case let .success(arryDashboardTableObjects):
+                print("- DashboardVC userStore.callSendDashboardTableObjects received SUCCESSFUL response")
+                
+                self.userStore.arryDashboardTableObjects = arryDashboardTableObjects
+                if self.userStore.currentDashboardObjPos == nil {
+                    self.userStore.currentDashboardObjPos = 0
+                }
+                self.userStore.currentDashboardObject = arryDashboardTableObjects[self.userStore.currentDashboardObjPos]
+                self.userStore.boolDashObjExists = true
+                self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
+                self.checkDashboardTableObject()
+                
+            case let .failure(error):
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    if case UserStoreError.fileNotFound = error {
+                        print("* file not found error *")
+                        self.templateAlert(alertTitle: "", alertMessage: "No data exists. Go to Manage Data to add data for your dashboard.")
+                    } else {
+                        self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
                     }
                 }
+            }
         }
     }
     
     @objc private func refreshData(_ sender: UIRefreshControl) {
-
+        
         self.userStore.callSendDataSourceObjects { responseResult in
             switch responseResult{
             case let .success(arryDataSourceObjects):
                 self.userStore.arryDataSourceObjects = arryDataSourceObjects
                 self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
-//                self.refreshValuesInTable()
+                //                self.refreshValuesInTable()
                 self.refreshDashboardTableObjects(sender)
             case .failure(_):
                 print("No new data")
@@ -252,7 +238,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
             }
         }
     }
-
+    
     func refreshDashboardTableObjects(_ sender: UIRefreshControl){
         self.userStore.callSendDashboardTableObjects { responseResult in
             DispatchQueue.main.async {
@@ -263,7 +249,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
                     self.userStore.writeObjectToJsonFile(object: arryDashboardTableObjects, filename: "arryDashboardTableObjects.json")
                     self.tblDashboard.reloadData() // Reloads table view
                     sender.endRefreshing()
-
+                    
                 case let .failure(error):
                     sender.endRefreshing() // Stop refreshing before showing alert
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -280,7 +266,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
         }
     }
     
-//    func didSelectDashboard(dashboard: DashboardTableObject) {
+    //    func didSelectDashboard(dashboard: DashboardTableObject) {
     func didSelectDashboard(currentDashboardObjPos:Int){
         DispatchQueue.main.async{
             self.userStore.currentDashboardObjPos = currentDashboardObjPos
@@ -292,7 +278,7 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
             self.tblDashboard.reloadData()
         }
     }
-
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "goToManageDataVC"){
             let manageDataVC = segue.destination as! ManageDataVC
@@ -300,9 +286,9 @@ class DashboardVC: TemplateVC, SelectDashboardVCDelegate{
             manageDataVC.appleHealthDataFetcher = self.appleHealthDataFetcher
             manageDataVC.healthDataStore = self.healthDataStore
             manageDataVC.requestStore = self.requestStore
-
+            
         }
-
+        
     }
 }
 
@@ -313,7 +299,7 @@ extension DashboardVC: UITableViewDelegate{
         tableView.beginUpdates()
         tableView.endUpdates()
     }
-
+    
 }
 
 extension DashboardVC: UITableViewDataSource{
@@ -329,14 +315,14 @@ extension DashboardVC: UITableViewDataSource{
         guard let currentDashObj = userStore.currentDashboardObject,
               let arryIndepVarObjects = currentDashObj.arryIndepVarObjects,
               let unwpVerb = currentDashObj.verb else {return cell}
-//        guard let arryIndepVarObjects = userStore.currentDashboardObject!.arryIndepVarObjects else {
-//            print("- in cellForRowAt failed to get dashboardTableObject.arryIndepVarObjects ")
-//            return cell
-//        }
+        //        guard let arryIndepVarObjects = userStore.currentDashboardObject!.arryIndepVarObjects else {
+        //            print("- in cellForRowAt failed to get dashboardTableObject.arryIndepVarObjects ")
+        //            return cell
+        //        }
         
         
-//        guard let unwp_dashObject = self.dashboardTableObject,
-              
+        //        guard let unwp_dashObject = self.dashboardTableObject,
+        
         
         cell.indepVarObject = arryIndepVarObjects[indexPath.row]
         cell.configureCellWithIndepVarObject()
@@ -351,7 +337,7 @@ protocol SelectDashboardVCDelegate{
 }
 
 class DashboardTableCell: UITableViewCell {
-
+    
     // Properties
     var indepVarObject: IndepVarObject!
     var depVarVerb:String!
@@ -367,20 +353,20 @@ class DashboardTableCell: UITableViewCell {
     // additional layout paramters
     var isVisible: Bool = false {
         didSet {
-//            print("isLabelVisible toggled")
-//            lblDefinition.isHidden = !isVisible
+            //            print("isLabelVisible toggled")
+            //            lblDefinition.isHidden = !isVisible
             lblCorrelation.isHidden = !isVisible
-//            lblWhatItMeansToYou.isHidden = !isVisible
+            //            lblWhatItMeansToYou.isHidden = !isVisible
             stckVwClick.isHidden = !isVisible
-//            print("lblDefinition.isHidden: \(lblDefinition.isHidden)")
-//            print("lblCorrelation.isHidden: \(lblCorrelation.isHidden)")
+            //            print("lblDefinition.isHidden: \(lblDefinition.isHidden)")
+            //            print("lblCorrelation.isHidden: \(lblCorrelation.isHidden)")
             showLblDef()
             layoutIfNeeded()
         }
     }
     var lblDefinitionConstraints: [NSLayoutConstraint] = []
     var stckVwClick = UIStackView()
-//    var unclickedBottomConstraint: [NSLayoutConstraint] = []
+    //    var unclickedBottomConstraint: [NSLayoutConstraint] = []
     
     // Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -390,10 +376,10 @@ class DashboardTableCell: UITableViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // Setup views and constraints
     private func setupViews() {
-
+        
         contentView.addSubview(lblIndepVarName)
         lblIndepVarName.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         lblIndepVarName.translatesAutoresizingMaskIntoConstraints = false
@@ -405,7 +391,7 @@ class DashboardTableCell: UITableViewCell {
         vwCircle.layer.cornerRadius = heightFromPct(percent: 10) * 0.5 // Adjust as needed
         vwCircle.translatesAutoresizingMaskIntoConstraints = false
         vwCircle.accessibilityIdentifier="vwCircle"
-
+        
         contentView.addSubview(lblCorrelation)
         lblCorrelation.accessibilityIdentifier="lblCorrelation"
         lblCorrelation.isHidden = true
@@ -423,7 +409,7 @@ class DashboardTableCell: UITableViewCell {
             vwCircle.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: heightFromPct(percent: -2)),
             vwCircle.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
             vwCircle.widthAnchor.constraint(equalToConstant: heightFromPct(percent: 10)),
-
+            
             lblCorrelation.centerXAnchor.constraint(equalTo: vwCircle.centerXAnchor),
             lblCorrelation.centerYAnchor.constraint(equalTo: vwCircle.centerYAnchor),
         ])
@@ -435,41 +421,41 @@ class DashboardTableCell: UITableViewCell {
         stckVwClick.translatesAutoresizingMaskIntoConstraints=false
         stckVwClick.addArrangedSubview(lblDefinition)
         stckVwClick.addArrangedSubview(lblWhatItMeansToYou)
-
-//        contentView.addSubview(lblDefinition)
+        
+        //        contentView.addSubview(lblDefinition)
         lblDefinition.accessibilityIdentifier="lblDefinition"
-//        lblDefinition.isHidden = true
+        //        lblDefinition.isHidden = true
         lblDefinition.translatesAutoresizingMaskIntoConstraints = false
         lblDefinition.font = UIFont(name: "ArialRoundedMTBold", size: 15)
         lblDefinition.numberOfLines = 0 // Enable multi-line
         
-//        contentView.addSubview(lblWhatItMeansToYou)
+        //        contentView.addSubview(lblWhatItMeansToYou)
         lblWhatItMeansToYou.accessibilityIdentifier="lblWhatItMeansToYou"
-//        lblWhatItMeansToYou.isHidden = true
+        //        lblWhatItMeansToYou.isHidden = true
         lblWhatItMeansToYou.translatesAutoresizingMaskIntoConstraints = false
         lblWhatItMeansToYou.font = UIFont(name: "ArialRoundedMTBold", size: 15)
         lblWhatItMeansToYou.numberOfLines = 0 // Enable multi-line
         
     }
-
-
+    
+    
     // Additional methods as needed
     func configureCellWithIndepVarObject(){
         lblIndepVarName.text = indepVarObject.independentVarName
         createMultiFontDefinitionString()
-
-
+        
+        
         if let unwp_corr_value = indepVarObject.correlationValue {
             dblCorrelation = Double(unwp_corr_value)
-                if dblCorrelation < 0.0{
-                    vwCircle.backgroundColor = UIColor.wsYellowFromDecimal(CGFloat(dblCorrelation))
-                }
-                else{
-                    vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(dblCorrelation))
-                }
+            if dblCorrelation < 0.0{
+                vwCircle.backgroundColor = UIColor.wsYellowFromDecimal(CGFloat(dblCorrelation))
+            }
+            else{
+                vwCircle.backgroundColor = UIColor.wsBlueFromDecimal(CGFloat(dblCorrelation))
+            }
             lblCorrelation.text = String(format: "%.2f", Double(unwp_corr_value) ?? 0.0)
             whatItMeansToYou()
-//            lblWhatItMeansToYou.text = txtWhatItMeansToYou
+            //            lblWhatItMeansToYou.text = txtWhatItMeansToYou
         }
     }
     func showLblDef() {
@@ -484,12 +470,12 @@ class DashboardTableCell: UITableViewCell {
         }
         // Activate or deactivate constraints
         if isVisible {
-//            NSLayoutConstraint.deactivate(unclickedBottomConstraint)
+            //            NSLayoutConstraint.deactivate(unclickedBottomConstraint)
             NSLayoutConstraint.activate(lblDefinitionConstraints)
             
         } else {
             NSLayoutConstraint.deactivate(lblDefinitionConstraints)
-//            NSLayoutConstraint.activate(unclickedBottomConstraint)
+            //            NSLayoutConstraint.activate(unclickedBottomConstraint)
         }
     }
     func createMultiFontDefinitionString(){
@@ -512,14 +498,14 @@ class DashboardTableCell: UITableViewCell {
     func whatItMeansToYou(){
         let strCorrelation = String(format: "%.2f", Double(dblCorrelation))
         var detailsText = String()
-            if self.dblCorrelation > 0.25 {
-                detailsText = "Since your sign here is positive \(strCorrelation) and closer to 1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) more."
-            }
-            else if self.dblCorrelation > -0.25 {
-                detailsText = "Since the value is close to 0.0, this means your \(self.indepVarObject.noun ?? "<try reloading screen>") doesn’t have much of an impact on how much you \(self.depVarVerb ?? "<try reloading screen>" )."
-            } else {
-                detailsText = "Since your sign here is negative \(strCorrelation) and closer to -1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) less."
-            }
+        if self.dblCorrelation > 0.25 {
+            detailsText = "Since your sign here is positive \(strCorrelation) and closer to 1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) more."
+        }
+        else if self.dblCorrelation > -0.25 {
+            detailsText = "Since the value is close to 0.0, this means your \(self.indepVarObject.noun ?? "<try reloading screen>") doesn’t have much of an impact on how much you \(self.depVarVerb ?? "<try reloading screen>" )."
+        } else {
+            detailsText = "Since your sign here is negative \(strCorrelation) and closer to -1.0, this means as your \(self.indepVarObject.noun ?? "<try reloading screen>") increases you \(self.depVarVerb ?? "<try reloading screen>" ) less."
+        }
         let boldUnderlinedText = "For you:"
         let regularText = " " + detailsText
         // Create an attributed string for the bold and underlined part
