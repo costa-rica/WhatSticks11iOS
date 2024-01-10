@@ -58,14 +58,12 @@ class LoginVC: TemplateVC {
         self.appleHealthDataFetcher = AppleHealthDataFetcher()
         self.healthDataStore = HealthDataStore()
         self.healthDataStore.requestStore = self.requestStore
-        self.locationFetcher = LocationFetcher()
-        self.locationFetcher.fetchLocation()
+//        self.locationFetcher = LocationFetcher()
+//        self.locationFetcher.fetchLocation()
         
         // Set up tap gesture to dismiss keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(viewTapped))
         view.addGestureRecognizer(tapGesture)
-//        self.hkHealthStore = HKHealthStore()
-
         setup_lblTitle()
         setup_stckVwLogin()
         setup_btnLogin()
@@ -365,8 +363,6 @@ class LoginVC: TemplateVC {
     @objc func signUpTapped() {
         performSegue(withIdentifier: "goToRegisterVC", sender: self)
     }
-    
-
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "goToRegisterVC"){

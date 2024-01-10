@@ -71,6 +71,17 @@ class ManageAppleHealthVC: TemplateVC {
 /* Sending Apple Health Data */
 extension ManageAppleHealthVC{
     @objc func actionGetStepsData() {
+
+        let calendar = Calendar.current
+        // Strip off time components from both dates
+        let selectedDate = calendar.startOfDay(for: datePicker.date)
+        let currentDate = calendar.startOfDay(for: Date())
+        // Check if selectedDate is today or in the future
+        if selectedDate >= currentDate {
+            self.templateAlert(alertMessage: "You must pick a day in the past.")
+            return
+        }
+        
         if swtchAllHistoryIsOn {
             dtUserHistory = nil
         } else {
@@ -148,16 +159,7 @@ extension ManageAppleHealthVC{
         }
     }
     
-//    func necessaryDataCollected(){
-//        let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
-//        if all_data_count > 0{
-//            print("sending (arrySleepDict + arryStepsDict + arryHeartRateDict): \(String(all_data_count)) records")
-//            self.sendAppleHealthData(arryAppleHealthData: arrySleepDict + arryStepsDict + arryHeartRateDict)
-//        }
-//        else{
-//            self.templateAlert(alertMessage: "No records found to add. Check dates.")
-//        }
-//    }
+
     func sendAppleWorkouts(){
         
         print("- in sendAppleWorkouts")
@@ -176,15 +178,10 @@ extension ManageAppleHealthVC{
                 case .failure(_):
                     self.removeSpinner()
                     self.templateAlert(alertMessage: "Failed to send workouts properly")
-//                    self.sendAppleHealthData(userMessage:"failed to update apple workouts", dateStringTimeStamp:dateStringTimeStamp)
+
                 }
             }
-        } 
-//        else{
-//            sendAppleHealthData(userMessage:"No records found to add. Check dates.", dateStringTimeStamp:dateStringTimeStamp)
-//        }
-        
-
+        }
     }
     func sendAppleHealthData(userMessage:String, dateStringTimeStamp:String){
         print("- in sendAppleHealthData")

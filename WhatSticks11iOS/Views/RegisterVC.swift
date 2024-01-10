@@ -171,8 +171,12 @@ class RegisterVC: TemplateVC {
     
     func requestRegister() {
         print("- RegisterVC: requestRegister()")
-        let lat = locationFetcher.userLocation?.latitude ?? 999.99
-        let lon = locationFetcher.userLocation?.longitude ?? 999.99
+//        let lat = locationFetcher.userLocation?.latitude ?? 999.99
+//        let lon = locationFetcher.userLocation?.longitude ?? 999.99
+//        let lat = locationFetcher.userLocation.latitude
+//        let lon = locationFetcher.userLocation.longitude
+        let lat = 999.99
+        let lon = 999.99
         userStore.callRegisterNewUser(email: txtEmail.text!, password: txtPassword.text!,lat:lat, lon: lon) { responseResultRegister in
             DispatchQueue.main.async {
                 switch responseResultRegister {

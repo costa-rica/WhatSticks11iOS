@@ -1,5 +1,6 @@
 Europe/Paris
 America/New_York
+Etc/GMT
 Canada/Pacific
 Europe/Amsterdam
 Europe/Andorra
@@ -18,4 +19,3 @@ US/Michigan
 US/Mountain
 US/Pacific
 US/Samoa
-
