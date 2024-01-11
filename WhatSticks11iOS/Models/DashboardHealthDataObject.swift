@@ -11,6 +11,7 @@ import Foundation
 class DataSourceObject: Codable{
     var name:String?//name for display on ManageDataVC
     var recordCount:String?
+    var earliestRecordDate:String?
 }
 
 class DashboardTableObject:Codable{

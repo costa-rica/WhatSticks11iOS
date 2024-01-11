@@ -40,18 +40,22 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
     }
     override func viewDidAppear(_ animated: Bool) {
         // MARK: There is an error here
-        for obj in userStore.arryDataSourceObjects!{
-            print("\(obj.name!): \(obj.recordCount!)")
-        }
-        DispatchQueue.main.async{
-            // Assuming you want to reload all rows
-            let section = 0 // Modify this if you have multiple sections
-            let numberOfRows = self.tblDataSources.numberOfRows(inSection: section)
-            let indexPaths = (0..<numberOfRows).map { IndexPath(row: $0, section: section) }
-            self.tblDataSources.reloadRows(at: indexPaths, with: .automatic)
-        }
+//        for obj in userStore.arryDataSourceObjects!{
+//            print("\(obj.name!): \(obj.recordCount!)")
+//        }
+//        DispatchQueue.main.async{
+//            // Assuming you want to reload all rows
+//            let section = 0 // Modify this if you have multiple sections
+//            let numberOfRows = self.tblDataSources.numberOfRows(inSection: section)
+//            let indexPaths = (0..<numberOfRows).map { IndexPath(row: $0, section: section) }
+//            self.tblDataSources.reloadRows(at: indexPaths, with: .automatic)
+//        }
     }// This tries to reload when data was added via AppleHealthDataVC
     override func viewWillAppear(_ animated: Bool) {
+        
+        
+        
+        
         self.userStore.callSendDataSourceObjects { responseResult in
             switch responseResult{
             case let .success(arryDataSourceObjects):
@@ -89,11 +93,13 @@ class ManageDataVC: TemplateVC, ManageDataVCDelegate{
         self.userStore.callSendDataSourceObjects { responseResult in
             switch responseResult{
             case let .success(arryDataSourceObjects):
+                print("> ManageDataVC -- case let .success(arryDataSourceObjects):")
                 self.userStore.arryDataSourceObjects = arryDataSourceObjects
                 self.userStore.writeObjectToJsonFile(object: arryDataSourceObjects, filename: "arryDataSourceObjects.json")
                 self.refreshValuesInTable()
                 self.refreshDashboardTableObjects()
             case let .failure(error):
+                print("> ManageDataVC -- case let .failure(error):")
                 sender.endRefreshing()
                 self.templateAlert(alertTitle: "Alert", alertMessage: "Failed to update data. Error: \(error)")
             }
@@ -167,16 +173,22 @@ extension ManageDataVC: UITableViewDelegate{
 
 extension ManageDataVC: UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        print("**********")
+        print("userStore.arryDataSourceObjects?.count: \(userStore.arryDataSourceObjects?.count)")
+        print("**********")
         return userStore.arryDataSourceObjects?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ManageDataTableCell", for: indexPath) as! ManageDataTableCell
-        guard let arryDashHealthDataObj = userStore.arryDataSourceObjects else {return cell}
-        let dashHealthDataObj = arryDashHealthDataObj[indexPath.row]
-        let dataSourceText = dashHealthDataObj.name!
-        let recordCountText = dashHealthDataObj.recordCount!
-        cell.config(dataSource: dashHealthDataObj.name ?? "no name",recordCount:dashHealthDataObj.recordCount ?? "no records")
+        guard let arryDataSourceObjects = userStore.arryDataSourceObjects else {return cell}
+        cell.dataSourceObj = arryDataSourceObjects[indexPath.row]
+        
+        
+        cell.config()
+//        let dataSourceText = dashHealthDataObj.name!
+//        let recordCountText = dashHealthDataObj.recordCount!
+//        cell.config(dataSource: dashHealthDataObj.name ?? "no name",recordCount:dashHealthDataObj.recordCount ?? "no records")
         cell.manageDataTableVCDelegate = self
         cell.indexPath = indexPath
         return cell
@@ -194,14 +206,16 @@ protocol ManageDataVCDelegate{
 
 class ManageDataTableCell: UITableViewCell{
     var manageDataTableVCDelegate : ManageDataVCDelegate!
+    var dataSourceObj: DataSourceObject!
     var stckVwMain = UIStackView()
     var stckVwLabels = UIStackView()
     var lblSourceName = UILabel()
     var lblRecordCount = UILabel()
-    var btnRefresh = UIButton()
-    var dataSource = ""
-    var vwSpacerTop = UIView()
-    var vwSpacer = UIView()
+    var lblEarliestDate = UILabel()
+    var btnAddDelete = UIButton()
+//    var dataSource = ""
+//    var vwSpacerTop = UIView()
+//    var vwSpacer = UIView()
     var indexPath: IndexPath!
     
     
@@ -214,17 +228,18 @@ class ManageDataTableCell: UITableViewCell{
     }
     override func prepareForReuse() {
         super.prepareForReuse()
+        lblEarliestDate.removeFromSuperview()
+        lblSourceName.removeFromSuperview()
+        lblRecordCount.removeFromSuperview()
+        stckVwLabels.removeFromSuperview()
+        stckVwMain.removeFromSuperview()
+        
     }
     
-    func config(dataSource:String, recordCount:String) {
-        self.dataSource = dataSource
-        lblSourceName.text = self.dataSource
+    func config(){
+        lblSourceName.text = dataSourceObj.name
         lblSourceName.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         lblSourceName.translatesAutoresizingMaskIntoConstraints = false
-        
-        lblRecordCount.text = "Record Count: \(recordCount)"
-        lblRecordCount.font = UIFont(name: "ArialRoundedMTBold", size: 12)
-        lblRecordCount.translatesAutoresizingMaskIntoConstraints = false
         
         stckVwMain.axis = .horizontal
         stckVwLabels.axis = .vertical
@@ -233,50 +248,42 @@ class ManageDataTableCell: UITableViewCell{
         stckVwLabels.accessibilityIdentifier = "stckVwLabels"
         stckVwLabels.translatesAutoresizingMaskIntoConstraints = false
         
-        vwSpacerTop.translatesAutoresizingMaskIntoConstraints = false
-        vwSpacer.translatesAutoresizingMaskIntoConstraints = false
-        
-        
         // First add the stack view to the contentView
-        contentView.addSubview(vwSpacerTop)
         contentView.addSubview(stckVwMain)
-        contentView.addSubview(vwSpacer)
-        
-        // Then activate the constraints
-        // Set constraints for vwSpacerTop
-        vwSpacerTop.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 2.5)).isActive = true
-        vwSpacerTop.leadingAnchor.constraint(equalTo: contentView.leadingAnchor).isActive = true
-        vwSpacerTop.trailingAnchor.constraint(equalTo: contentView.trailingAnchor).isActive = true
-        vwSpacerTop.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
-        
-        
-        
-        vwSpacer.heightAnchor.constraint(equalToConstant: heightFromPct(percent: 2.5)).isActive=true
-        vwSpacer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor).isActive=true
-        vwSpacer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor).isActive=true
-        vwSpacer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true  // This line was missing
-        
-        
-        // Modify the stckVwMain top anchor constraint to attach to vwSpacerTop
-        stckVwMain.topAnchor.constraint(equalTo: vwSpacerTop.bottomAnchor).isActive = true
-        stckVwMain.trailingAnchor.constraint(equalTo: contentView.trailingAnchor).isActive = true
-        stckVwMain.bottomAnchor.constraint(equalTo: vwSpacer.topAnchor).isActive = true
-        stckVwMain.leadingAnchor.constraint(equalTo: contentView.leadingAnchor).isActive = true
         
         stckVwMain.addArrangedSubview(stckVwLabels)
         stckVwLabels.addArrangedSubview(lblSourceName)
-        stckVwLabels.addArrangedSubview(lblRecordCount)
         
         // Button configuration
-        btnRefresh.setTitle(" Add/Delete ", for: .normal)
-        btnRefresh.titleLabel?.font = UIFont(name: "ArialRoundedMTBold", size: 12)
-        btnRefresh.backgroundColor = .systemOrange
-        btnRefresh.layer.cornerRadius = 10
-        btnRefresh.translatesAutoresizingMaskIntoConstraints = false
-        stckVwMain.addArrangedSubview(btnRefresh)
-        btnRefresh.addTarget(self, action: #selector(touchDown(_:)), for: .touchDown)
-        btnRefresh.addTarget(self, action: #selector(touchUpInside(_:)), for: .touchUpInside)
-        btnRefresh.widthAnchor.constraint(equalToConstant: widthFromPct(percent: 25)).isActive=true
+        btnAddDelete.setTitle(" Add/Delete ", for: .normal)
+        btnAddDelete.titleLabel?.font = UIFont(name: "ArialRoundedMTBold", size: 12)
+        btnAddDelete.backgroundColor = .systemOrange
+        btnAddDelete.layer.cornerRadius = 10
+        btnAddDelete.translatesAutoresizingMaskIntoConstraints = false
+        stckVwMain.addArrangedSubview(btnAddDelete)
+        btnAddDelete.addTarget(self, action: #selector(touchDown(_:)), for: .touchDown)
+        btnAddDelete.addTarget(self, action: #selector(touchUpInside(_:)), for: .touchUpInside)
+        btnAddDelete.widthAnchor.constraint(equalToConstant: widthFromPct(percent: 25)).isActive=true
+        
+        if let unwp_recordCount = dataSourceObj.recordCount {
+            lblRecordCount.text = "Record Count: \(unwp_recordCount)"
+            lblRecordCount.font = UIFont(name: "ArialRoundedMTBold", size: 12)
+            lblRecordCount.translatesAutoresizingMaskIntoConstraints = false
+            stckVwLabels.addArrangedSubview(lblRecordCount)
+        }
+        if let unwp_earliestDate = dataSourceObj.earliestRecordDate{
+            lblEarliestDate.text = "Earliest Record: \(unwp_earliestDate)"
+            lblEarliestDate.font = UIFont(name: "ArialRoundedMTBold", size: 12)
+            lblEarliestDate.translatesAutoresizingMaskIntoConstraints = false
+            stckVwLabels.addArrangedSubview(lblEarliestDate)
+        }
+        
+        NSLayoutConstraint.activate([
+            stckVwMain.topAnchor.constraint(equalTo: contentView.topAnchor,constant: heightFromPct(percent: 2.5)),
+            stckVwMain.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            stckVwMain.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: heightFromPct(percent: -2.5)),
+            stckVwMain.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+        ])
     }
     
     @objc func touchDown(_ sender: UIButton) {
@@ -290,8 +297,8 @@ class ManageDataTableCell: UITableViewCell{
         UIView.animate(withDuration: 0.2, delay: 0.0, options: [.curveEaseInOut], animations: {
             sender.transform = .identity
         }, completion: nil)
-        print("- in touchUpInside for \(dataSource)")
-        self.manageDataTableVCDelegate.segueToManageDataSourceDetailsVC(source: dataSource)
+//        print("- in touchUpInside for \(dataSource)")
+        self.manageDataTableVCDelegate.segueToManageDataSourceDetailsVC(source: dataSourceObj.name ?? "missing")
         
     }
 }

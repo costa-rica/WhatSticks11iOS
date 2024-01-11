@@ -31,8 +31,8 @@
 		014205BB2B23841C00315904 /* AppleHealthDataUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014205BA2B23841C00315904 /* AppleHealthDataUtils.swift */; };
 		01534C152B4C871600C24302 /* timezones.txt in Resources */ = {isa = PBXBuildFile; fileRef = 01534C142B4C871600C24302 /* timezones.txt */; };
 		01534C172B4F586A00C24302 /* LaunchVideoVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01534C162B4F586A00C24302 /* LaunchVideoVC.swift */; };
-		01534C192B4F5F2F00C24302 /* wsLaunchVideo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 01534C182B4F5F2F00C24302 /* wsLaunchVideo.mp4 */; };
 		016988A82B300D74009EA492 /* ManageUserVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016988A72B300D74009EA492 /* ManageUserVC.swift */; };
+		01A928392B50457500357326 /* wsLaunchVideo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 01A928382B50457500357326 /* wsLaunchVideo.mp4 */; };
 		01B02DE82B4C306300A38D0B /* LocationFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B02DE72B4C306300A38D0B /* LocationFetcher.swift */; };
 		01CF9D632B46F7D200EB36C1 /* SelectDashboardVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CF9D622B46F7D200EB36C1 /* SelectDashboardVC.swift */; };
 /* End PBXBuildFile section */
@@ -84,8 +84,8 @@
 		014205BC2B24459800315904 /* WhatSticks11iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WhatSticks11iOS.entitlements; sourceTree = "<group>"; };
 		01534C142B4C871600C24302 /* timezones.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = timezones.txt; sourceTree = "<group>"; };
 		01534C162B4F586A00C24302 /* LaunchVideoVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchVideoVC.swift; sourceTree = "<group>"; };
-		01534C182B4F5F2F00C24302 /* wsLaunchVideo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = wsLaunchVideo.mp4; sourceTree = "<group>"; };
 		016988A72B300D74009EA492 /* ManageUserVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageUserVC.swift; sourceTree = "<group>"; };
+		01A928382B50457500357326 /* wsLaunchVideo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = wsLaunchVideo.mp4; sourceTree = "<group>"; };
 		01B02DE72B4C306300A38D0B /* LocationFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationFetcher.swift; sourceTree = "<group>"; };
 		01CF9D622B46F7D200EB36C1 /* SelectDashboardVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectDashboardVC.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -139,7 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				014205BC2B24459800315904 /* WhatSticks11iOS.entitlements */,
-				01534C182B4F5F2F00C24302 /* wsLaunchVideo.mp4 */,
+				01A928382B50457500357326 /* wsLaunchVideo.mp4 */,
 				014205AB2B21E91600315904 /* Utilities */,
 				014205A22B21118600315904 /* Views */,
 				014205A12B21117F00315904 /* Stores */,
@@ -322,7 +322,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				01534C192B4F5F2F00C24302 /* wsLaunchVideo.mp4 in Resources */,
+				01A928392B50457500357326 /* wsLaunchVideo.mp4 in Resources */,
 				0142057B2B21113D00315904 /* LaunchScreen.storyboard in Resources */,
 				01534C152B4C871600C24302 /* timezones.txt in Resources */,
 				014205782B21113D00315904 /* Assets.xcassets in Resources */,
