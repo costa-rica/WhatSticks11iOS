@@ -18,7 +18,8 @@ class TemplateVC: UIViewController {
     var bodySidePaddingPercentage = Float(5.0)
     var bodyTopPaddingPercentage = Float(20.0)
     var spinnerView: UIView?
-    var messageLabel = UILabel()
+    var activityIndicator:UIActivityIndicatorView!
+    var lblMessage = UILabel()
     var imgLogoTrailingAnchor: NSLayoutConstraint!
     var lblScreenNameTopAnchor: NSLayoutConstraint!
     var lblUserNameBottomAnchor: NSLayoutConstraint!
@@ -134,25 +135,28 @@ class TemplateVC: UIViewController {
     }
     func showSpinner() {
         spinnerView = UIView(frame: self.view.bounds)
-        
         spinnerView?.backgroundColor = UIColor(white: 0, alpha: 0.5)
-        let activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator = UIActivityIndicatorView(style: .large)
         activityIndicator.transform = CGAffineTransform(scaleX: 2, y: 2)// makes spinner bigger
         activityIndicator.center = spinnerView!.center
         activityIndicator.startAnimating()
         spinnerView?.addSubview(activityIndicator)
-        messageLabel.text = "This is a lot of data so it may take more than a minute"
-//        messageLabel.font = UIFont(name: "ArialRoundedMTBold", size: 20)
-        messageLabel.numberOfLines = 0
-        messageLabel.lineBreakMode = .byWordWrapping
-        messageLabel.textColor = .white
-        messageLabel.textAlignment = .center
-        messageLabel.frame = CGRect(x: 0, y: activityIndicator.frame.maxY + 20, width: spinnerView!.bounds.width, height: 50)
-        messageLabel.isHidden = true
-        spinnerView?.addSubview(messageLabel)
         self.view.addSubview(spinnerView!)
         spinnerView?.accessibilityIdentifier = "spinnerView"
         activityIndicator.accessibilityIdentifier = "activityIndicator"
+
+    }
+    func spinnerScreenLblMessage(message:String){
+//        lblMessage.text = "This is a lot of data so it may take more than a minute"
+        lblMessage.text = message
+//        messageLabel.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        lblMessage.numberOfLines = 0
+        lblMessage.lineBreakMode = .byWordWrapping
+        lblMessage.textColor = .white
+        lblMessage.textAlignment = .center
+        lblMessage.frame = CGRect(x: 0, y: activityIndicator.frame.maxY + 20, width: spinnerView!.bounds.width, height: 50)
+//        lblMessage.isHidden = true
+        spinnerView?.addSubview(lblMessage)
         // Timer to show the label after 3 seconds
 //        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
 //            self.messageLabel.isHidden = false
@@ -162,6 +166,9 @@ class TemplateVC: UIViewController {
         spinnerView?.removeFromSuperview()
         spinnerView = nil
         print("removeSpinner() completed")
+    }
+    func removeLblMessage(){
+        lblMessage.removeFromSuperview()
     }
 }
 

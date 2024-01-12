@@ -93,8 +93,10 @@ extension ManageAppleHealthVC{
             case let .success(arryStepsDict):
                 print("succesfully collected - arryStepsDict - from healthFetcher class")
                 self.arryStepsDict = arryStepsDict
+                let formatted_arryStepsDictCount = formatWithCommas(number: arryStepsDict.count)
+                self.spinnerScreenLblMessage(message: "Retrieved \(formatted_arryStepsDictCount) Steps records")
                 if arryStepsDict.count == 0 {
-                    self.templateAlert(alertMessage: "Either you did not allow permissions of there is no STEPS data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
+                    self.templateAlert(alertMessage: "There are no STEPS data in your Apple Health Data")
                     self.removeSpinner()
                 }
             case let .failure(error):
@@ -110,8 +112,11 @@ extension ManageAppleHealthVC{
             case let .success(arrySleepDict):
                 print("succesfully collected - arrySleepDict - from healthFetcher class")
                 self.arrySleepDict = arrySleepDict
+                self.removeLblMessage()
+                let formatted_arrySleepDictCount = formatWithCommas(number: arrySleepDict.count)
+                self.spinnerScreenLblMessage(message: "Retrieved \(formatted_arrySleepDictCount) Sleep records")
                 if arrySleepDict.count == 0 {
-                    self.templateAlert(alertMessage: "Either you did not allow permissions of there is no SLEEP data in your Apple Health Data.\n Go to Settings > Health > Data Access & Devices > WhatSticks11iOS to grant access.")
+                    self.templateAlert(alertMessage: "There are no SLEEP data in your Apple Health Data.")
                     self.removeSpinner()
                 }
             case let .failure(error):
@@ -128,6 +133,9 @@ extension ManageAppleHealthVC{
             case let .success(arryHeartRateDict):
                 print("succesfully collected - arryHeartRateDict - from healthFetcher class")
                 self.arryHeartRateDict = arryHeartRateDict
+                self.removeLblMessage()
+                let formatted_arryHeartRateDictCount = formatWithCommas(number: arryHeartRateDict.count)
+                self.spinnerScreenLblMessage(message: "Retrieved \(formatted_arryHeartRateDictCount) Heart Rate records")
             case let .failure(error):
                 print("There was an error getting heart rate: \(error)")
                 self.removeSpinner()
@@ -140,6 +148,9 @@ extension ManageAppleHealthVC{
             case let .success(arryExerciseTimeDict):
                 print("succesfully collected - arryExerciseTimeDict - from healthFetcher class")
                 self.arryExerciseTimeDict = arryExerciseTimeDict
+                self.removeLblMessage()
+                let formatted_arryExerciseTimeDictCount = formatWithCommas(number: arryExerciseTimeDict.count)
+                self.spinnerScreenLblMessage(message: "Retrieved \(formatted_arryExerciseTimeDictCount) Exercise Time records")
             case let .failure(error):
                 print("There was an error getting heart rate: \(error)")
                 self.removeSpinner()
@@ -152,6 +163,9 @@ extension ManageAppleHealthVC{
             case let .success(arryWorkoutDict):
                 print("succesfully collected - arryWorkoutDict - from healthFetcher class")
                 self.arryWorkoutDict = arryWorkoutDict
+                self.removeLblMessage()
+                let formatted_arryWorkoutDictCount = formatWithCommas(number: arryWorkoutDict.count)
+                self.spinnerScreenLblMessage(message: "Retrieved \(formatted_arryWorkoutDictCount) Workout records")
             case let .failure(error):
                 print("There was an error getting heart rate: \(error)")
                 self.removeSpinner()
@@ -169,8 +183,8 @@ extension ManageAppleHealthVC{
             self.templateAlert(alertMessage: "No user id. check ManageAppleHealthVC sendAppleHealthData.")
             return}
         if arryWorkoutDict.count > 0 {
-            
-            // Call self.healthDataStore.callReceiveAppleWorkoutsData
+            self.removeLblMessage()
+            self.spinnerScreenLblMessage(message: "Sending Apple Health records WSAPI")
             self.healthDataStore.callReceiveAppleWorkoutsData(userId: user_id,dateStringTimeStamp:dateStringTimeStamp, arryAppleWorkouts: arryWorkoutDict) { resultResponse in
                 switch resultResponse{
                 case .success(_):
@@ -191,7 +205,7 @@ extension ManageAppleHealthVC{
         let all_data_count = arrySleepDict.count + arryStepsDict.count + arryHeartRateDict.count
         if all_data_count > 0{
             let arryAppleHealthData = arrySleepDict + arryStepsDict + arryHeartRateDict
-            
+
             /* Send apple works outs first */
             self.healthDataStore.sendChunksToWSAPI(userId:user_id,dateStringTimeStamp:dateStringTimeStamp ,arryAppleHealthData: arryAppleHealthData) { responseResult in
                 self.removeSpinner()
