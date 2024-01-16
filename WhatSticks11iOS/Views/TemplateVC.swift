@@ -134,16 +134,32 @@ class TemplateVC: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     func showSpinner() {
-        spinnerView = UIView(frame: self.view.bounds)
-        spinnerView?.backgroundColor = UIColor(white: 0, alpha: 0.5)
+//        spinnerView = UIView(frame: self.view.bounds)
+        spinnerView = UIView()
+        spinnerView!.translatesAutoresizingMaskIntoConstraints = false
+        spinnerView!.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        spinnerView!.accessibilityIdentifier = "spinnerView"
+        self.view.addSubview(spinnerView!)
+        
         activityIndicator = UIActivityIndicatorView(style: .large)
+//        activityIndicator = UIActivityIndicatorView()
+        activityIndicator.translatesAutoresizingMaskIntoConstraints=false
         activityIndicator.transform = CGAffineTransform(scaleX: 2, y: 2)// makes spinner bigger
         activityIndicator.center = spinnerView!.center
         activityIndicator.startAnimating()
-        spinnerView?.addSubview(activityIndicator)
-        self.view.addSubview(spinnerView!)
-        spinnerView?.accessibilityIdentifier = "spinnerView"
+        spinnerView!.addSubview(activityIndicator)
         activityIndicator.accessibilityIdentifier = "activityIndicator"
+        
+        NSLayoutConstraint.activate([
+            spinnerView!.topAnchor.constraint(equalTo: view.topAnchor),
+            spinnerView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            spinnerView!.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            spinnerView!.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            activityIndicator.centerXAnchor.constraint(equalTo: spinnerView!.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: spinnerView!.centerYAnchor),
+//            activityIndicator.heightAnchor.constraint(equalToConstant: widthFromPct(percent: 15)),
+//            activityIndicator.widthAnchor.constraint(equalToConstant: widthFromPct(percent: 15)),
+        ])
 
     }
     func spinnerScreenLblMessage(message:String){
@@ -154,10 +170,16 @@ class TemplateVC: UIViewController {
         lblMessage.lineBreakMode = .byWordWrapping
         lblMessage.textColor = .white
         lblMessage.textAlignment = .center
-        lblMessage.frame = CGRect(x: 0, y: activityIndicator.frame.maxY + 20, width: spinnerView!.bounds.width, height: 50)
+//        lblMessage.frame = CGRect(x: 0, y: activityIndicator.frame.maxY + 20, width: spinnerView!.bounds.width, height: 50)
 //        lblMessage.isHidden = true
         spinnerView?.addSubview(lblMessage)
-        // Timer to show the label after 3 seconds
+        lblMessage.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+        lblMessage.topAnchor.constraint(equalTo: activityIndicator.bottomAnchor, constant: heightFromPct(percent: 2)),
+        lblMessage.leadingAnchor.constraint(equalTo: spinnerView!.leadingAnchor,constant: widthFromPct(percent: 5)),
+        lblMessage.trailingAnchor.constraint(equalTo: spinnerView!.trailingAnchor,constant: widthFromPct(percent: -5)),
+        ])
+//      Timer to show the label after 3 seconds
 //        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
 //            self.messageLabel.isHidden = false
 //        }

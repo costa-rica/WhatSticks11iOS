@@ -41,10 +41,6 @@ class UserStore {
         didSet{
             guard let unwp_pos = currentDashboardObjPos else {return}
             if arryDashboardTableObjects.count > currentDashboardObjPos{
-                
-                print("--- UserStore var arryDashboardTableObjects=[DashboardTableObject](){")
-                print("arryDashboardTableObjects.count: \(arryDashboardTableObjects.count)")
-                print("currentDashboardObjPos: \(currentDashboardObjPos)")
                 currentDashboardObject = arryDashboardTableObjects[unwp_pos]
                 // error occurs line above. Error: out of range
             }
