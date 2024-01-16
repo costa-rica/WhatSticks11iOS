@@ -39,7 +39,7 @@ class SelectDashboardVC: UIViewController, UIPickerViewDataSource, UIPickerViewD
     private func setupView(){
         
         view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
-        vwSelectDashboard.backgroundColor = UIColor.black
+        vwSelectDashboard.backgroundColor = UIColor.systemBackground
         vwSelectDashboard.layer.cornerRadius = 12
         vwSelectDashboard.layer.borderColor = UIColor(named: "gray-500")?.cgColor
         vwSelectDashboard.layer.borderWidth = 2

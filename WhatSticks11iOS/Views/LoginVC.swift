@@ -71,6 +71,9 @@ class LoginVC: TemplateVC {
         setupForgotPasswordButton()
         setupSignUpLabel()
         setup_checkFiles()
+        if let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.path {
+            print("Documents Directory: \(documentsPath)")
+        }
         
     }
     override func viewWillAppear(_ animated: Bool) {

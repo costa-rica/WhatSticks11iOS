@@ -326,7 +326,7 @@ class InfoVC: UIViewController{
         lblDetails.text = self.dashboardTableObject?.definition
         lblDetails.numberOfLines = 0
         view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
-        vwInfo.backgroundColor = UIColor.black
+        vwInfo.backgroundColor = UIColor.systemBackground
         vwInfo.layer.cornerRadius = 12
         vwInfo.layer.borderColor = UIColor(named: "gray-500")?.cgColor
         vwInfo.layer.borderWidth = 2

@@ -315,15 +315,7 @@ extension DashboardVC: UITableViewDataSource{
         guard let currentDashObj = userStore.currentDashboardObject,
               let arryIndepVarObjects = currentDashObj.arryIndepVarObjects,
               let unwpVerb = currentDashObj.verb else {return cell}
-        //        guard let arryIndepVarObjects = userStore.currentDashboardObject!.arryIndepVarObjects else {
-        //            print("- in cellForRowAt failed to get dashboardTableObject.arryIndepVarObjects ")
-        //            return cell
-        //        }
-        
-        
-        //        guard let unwp_dashObject = self.dashboardTableObject,
-        
-        
+
         cell.indepVarObject = arryIndepVarObjects[indexPath.row]
         cell.configureCellWithIndepVarObject()
         cell.depVarVerb = unwpVerb
@@ -353,13 +345,8 @@ class DashboardTableCell: UITableViewCell {
     // additional layout paramters
     var isVisible: Bool = false {
         didSet {
-            //            print("isLabelVisible toggled")
-            //            lblDefinition.isHidden = !isVisible
             lblCorrelation.isHidden = !isVisible
-            //            lblWhatItMeansToYou.isHidden = !isVisible
             stckVwClick.isHidden = !isVisible
-            //            print("lblDefinition.isHidden: \(lblDefinition.isHidden)")
-            //            print("lblCorrelation.isHidden: \(lblCorrelation.isHidden)")
             showLblDef()
             layoutIfNeeded()
         }
